@@ -11,7 +11,7 @@ public class PartialHTTP1Server implements Runnable {
 	public PartialHTTP1Server(Socket c) {
 		connect = c;
 	}
-
+//
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
