@@ -1,8 +1,7 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.StringTokenizer;
 
 public class PartialHTTP1Server implements Runnable {
 
@@ -46,6 +45,30 @@ public class PartialHTTP1Server implements Runnable {
 
 		BufferedReader in = null;
 		PrintWriter out = null;
+		BufferedOutputStream dataOut = null;
+
+		try {
+			in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
+
+			out = new PrintWriter(connect.getOutputStream());
+
+			dataOut = new BufferedOutputStream(connect.getOutputStream());
+
+			String input = in.readLine();
+
+			StringTokenizer parse = new StringTokenizer(input);
+			String http = parse.nextToken().toUpperCase();
+
+			if (http.equals("GET")  &&  http.equals("HEAD")) {
+
+			}
+
+
+
+			} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 
 	}
 }
