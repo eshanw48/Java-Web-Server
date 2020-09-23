@@ -11,6 +11,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
 import java.util.StringTokenizer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 // The tutorial can be found just here on the SSaurel's Blog :
 // https://www.ssaurel.com/blog/create-a-simple-http-web-server-in-java
@@ -30,6 +34,8 @@ public class PartialHTTP1Server implements Runnable{
 	// Client Connection via Socket Class
 	private Socket connect;
 
+	static private ThreadPoolExecutor pool;
+
 	public PartialHTTP1Server(Socket c) {
 		connect = c;
 	}
@@ -38,7 +44,7 @@ public class PartialHTTP1Server implements Runnable{
 		try {
 			ServerSocket serverConnect = new ServerSocket(PORT);
 			System.out.println("Server started.\nListening for connections on port : " + PORT + " ...\n");
-
+			pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
 			// we listen until user halts server execution
 			while (true) {
 				PartialHTTP1Server myServer = new PartialHTTP1Server(serverConnect.accept());
@@ -49,7 +55,10 @@ public class PartialHTTP1Server implements Runnable{
 
 				// create dedicated thread to manage the client connection
 				Thread thread = new Thread(myServer);
-				thread.start();
+
+				pool.execute(thread);
+
+
 			}
 
 		} catch (IOException e) {
@@ -63,7 +72,18 @@ public class PartialHTTP1Server implements Runnable{
 		BufferedReader in = null; PrintWriter out = null; BufferedOutputStream dataOut = null;
 		String fileRequested = null;
 
+		try
+		{
+			Thread.sleep(5000);
+		}
+		catch(InterruptedException ex)
+		{
+			Thread.currentThread().interrupt();
+		}
+
 		try {
+			System.out.println(pool.getQueue().size());
+			System.out.println(pool.getPoolSize());
 			// we read characters from the client via input stream on the socket
 			in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
 			// we get character output stream to client (for headers)
