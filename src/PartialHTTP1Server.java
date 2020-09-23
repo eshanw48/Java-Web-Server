@@ -72,14 +72,14 @@ public class PartialHTTP1Server implements Runnable{
 		BufferedReader in = null; PrintWriter out = null; BufferedOutputStream dataOut = null;
 		String fileRequested = null;
 
-		try
+		/*try
 		{
 			Thread.sleep(5000);
 		}
 		catch(InterruptedException ex)
 		{
 			Thread.currentThread().interrupt();
-		}
+		}*/
 
 		try {
 			System.out.println(pool.getQueue().size());
