@@ -2,16 +2,16 @@ import java.io.BufferedOutputStream;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.StringTokenizer;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-// The tutorial can be found just here on the SSaurel's Blog :
-// https://www.ssaurel.com/blog/create-a-simple-http-web-server-in-java
-// Each Client Connection will be managed in a dedicated Thread
 public class PartialHTTP1Server implements Runnable{
 
 	static final File WEB_ROOT = new File(".");
@@ -35,8 +35,8 @@ public class PartialHTTP1Server implements Runnable{
 
 	public static void main(String[] args) {
 		try {
-			ServerSocket serverConnect = new ServerSocket(PORT);
-			System.out.println("Server started.\nListening for connections on port : " + PORT+ " ...\n");
+			ServerSocket serverConnect = new ServerSocket(Integer.parseInt(args[0]));
+			System.out.println("Server started.\nListening for connections on port : " + Integer.parseInt(args[0])+ " ...\n");
 			pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
 			// we listen until user halts server execution
 			while (true) {
@@ -107,7 +107,17 @@ public class PartialHTTP1Server implements Runnable{
 				// we send HTTP Headers with data to client
 				out.println("HTTP/1.1 501 Not Implemented");
 				out.println("Server: Java HTTP Server from SSaurel : 1.0");
-				out.println("Date: " + new Date());
+				Date localtime = new Date();
+				DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+				converter.setTimeZone(TimeZone.getTimeZone("GMT"));
+				out.println("Date: " + converter.format(localtime) + " GMT");
+				out.println("Server: Apache/1.3.27 (Unix)");
+				out.println("MIME-version: 1.0");
+				long lastModified = file.lastModified();
+				Date modified  = new Date(lastModified);
+				DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+				converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
+				out.println("Last-Modified: " + converter2.format(modified) + " GMT");
 				out.println("Content-type: " + contentMimeType);
 				out.println("Content-length: " + fileLength);
 				out.println(); // blank line between headers and content, very important !
@@ -128,11 +138,19 @@ public class PartialHTTP1Server implements Runnable{
 
 				if (method.equals("GET")) { // GET method so we return content
 					byte[] fileData = readFileData(file, fileLength);
-
 					// send HTTP Headers
 					out.println("HTTP/1.0 200 OK");
-					out.println("Date: " + new Date());
-					out.println("Server: Java HTTP Server from SSaurel : 1.0");
+					Date localtime = new Date();
+					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
+					out.println("Date: " + converter.format(localtime) + " GMT");
+					out.println("Server: Apache/1.3.27 (Unix)");
+					out.println("MIME-version: 1.0");
+					long lastModified = file.lastModified();
+					Date modified  = new Date(lastModified);
+					DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+					converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
+					out.println("Last-Modified: " + converter2.format(modified) + " GMT");
 					out.println("Content-type: " + content);
 					out.println("Content-length: " + fileLength);
 					out.println(); // blank line between headers and content, very important !
@@ -205,8 +223,17 @@ public class PartialHTTP1Server implements Runnable{
 		byte[] fileData = readFileData(file, fileLength);
 
 		out.println("HTTP/1.0 404 File Not Found");
-		out.println("Server: Java HTTP Server from SSaurel : 1.0");
-		out.println("Date: " + new Date());
+		Date localtime = new Date();
+		DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+		converter.setTimeZone(TimeZone.getTimeZone("GMT"));
+		out.println("Date: " + converter.format(localtime) + " GMT");
+		out.println("Server: Apache/1.3.27 (Unix)");
+		out.println("MIME-version: 1.0");
+		long lastModified = file.lastModified();
+		Date modified  = new Date(lastModified);
+		DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+		converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
+		out.println("Last-Modified: " + converter2.format(modified) + " GMT");
 		out.println("Content-type: " + content);
 		out.println("Content-length: " + fileLength);
 		out.println(); // blank line between headers and content, very important !
