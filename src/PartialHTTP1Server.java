@@ -42,8 +42,8 @@ public class PartialHTTP1Server implements Runnable{
 
 	public static void main(String[] args) {
 		try {
-			ServerSocket serverConnect = new ServerSocket(Integer.parseInt(args[0]));
-			System.out.println("Server started.\nListening for connections on port : " + Integer.parseInt(args[0]) + " ...\n");
+			ServerSocket serverConnect = new ServerSocket(8000);
+			System.out.println("Server started.\nListening for connections on port : " + 8000+ " ...\n");
 			pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
 			// we listen until user halts server execution
 			while (true) {
@@ -82,8 +82,7 @@ public class PartialHTTP1Server implements Runnable{
 		}*/
 
 		try {
-			System.out.println(pool.getQueue().size());
-			System.out.println(pool.getPoolSize());
+
 			// we read characters from the client via input stream on the socket
 			in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
 			// we get character output stream to client (for headers)
