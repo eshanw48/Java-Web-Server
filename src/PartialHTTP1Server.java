@@ -26,7 +26,7 @@ public class PartialHTTP1Server implements Runnable{
 	static final String FILE_NOT_FOUND = "404.html";
 	static final String METHOD_NOT_SUPPORTED = "not_supported.html";
 	// port to listen connection
-	static final int PORT = 8000;
+	//static final int PORT = 8000;
 
 	// verbose mode
 	static final boolean verbose = true;
@@ -42,8 +42,8 @@ public class PartialHTTP1Server implements Runnable{
 
 	public static void main(String[] args) {
 		try {
-			ServerSocket serverConnect = new ServerSocket(PORT);
-			System.out.println("Server started.\nListening for connections on port : " + PORT + " ...\n");
+			ServerSocket serverConnect = new ServerSocket(Integer.parseInt(args[0]));
+			System.out.println("Server started.\nListening for connections on port : " + Integer.parseInt(args[0]) + " ...\n");
 			pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
 			// we listen until user halts server execution
 			while (true) {
