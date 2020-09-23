@@ -1,12 +1,5 @@
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
@@ -26,7 +19,7 @@ public class PartialHTTP1Server implements Runnable{
 	static final String FILE_NOT_FOUND = "404.html";
 	static final String METHOD_NOT_SUPPORTED = "not_supported.html";
 	// port to listen connection
-	//static final int PORT = 8000;
+	static final int PORT = 8000;
 
 	// verbose mode
 	static final boolean verbose = true;
@@ -42,8 +35,8 @@ public class PartialHTTP1Server implements Runnable{
 
 	public static void main(String[] args) {
 		try {
-			ServerSocket serverConnect = new ServerSocket(8000);
-			System.out.println("Server started.\nListening for connections on port : " + 8000+ " ...\n");
+			ServerSocket serverConnect = new ServerSocket(PORT);
+			System.out.println("Server started.\nListening for connections on port : " + PORT+ " ...\n");
 			pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
 			// we listen until user halts server execution
 			while (true) {
@@ -137,9 +130,9 @@ public class PartialHTTP1Server implements Runnable{
 					byte[] fileData = readFileData(file, fileLength);
 
 					// send HTTP Headers
-					out.println("HTTP/1.1 200 OK");
-					out.println("Server: Java HTTP Server from SSaurel : 1.0");
+					out.println("HTTP/1.0 200 OK");
 					out.println("Date: " + new Date());
+					out.println("Server: Java HTTP Server from SSaurel : 1.0");
 					out.println("Content-type: " + content);
 					out.println("Content-length: " + fileLength);
 					out.println(); // blank line between headers and content, very important !
@@ -211,7 +204,7 @@ public class PartialHTTP1Server implements Runnable{
 		String content = "text/html";
 		byte[] fileData = readFileData(file, fileLength);
 
-		out.println("HTTP/1.1 404 File Not Found");
+		out.println("HTTP/1.0 404 File Not Found");
 		out.println("Server: Java HTTP Server from SSaurel : 1.0");
 		out.println("Date: " + new Date());
 		out.println("Content-type: " + content);
