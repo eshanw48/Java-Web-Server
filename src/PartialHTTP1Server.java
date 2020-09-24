@@ -95,21 +95,29 @@ public class PartialHTTP1Server implements Runnable{
 				byte[] fileData = readFileData(file, fileLength);
 
 				// we send HTTP Headers with data to client
-				out.println("HTTP/1.0 400 Bad Request");
-				out.println("Server: Java HTTP Server");
+				out.println("HTTP/1.0 400 Bad Request\r\n");
+				out.println("\r\n");
+				out.println("Server: Java HTTP Server\r\n");
+				out.println("\r\n");
 				Date localtime = new Date();
 				DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 				converter.setTimeZone(TimeZone.getTimeZone("GMT"));
-				out.println("Date: " + converter.format(localtime) + " GMT");
-				out.println("Server: Apache/1.3.27 (Unix)");
-				out.println("MIME-version: 1.0");
+				out.println("Date: " + converter.format(localtime) + " GMT\r\n");
+				out.println("\r\n");
+				out.println("Server: Apache/1.3.27 (Unix)\r\n");
+				out.println("\r\n");
+				out.println("MIME-version: 1.0\r\n");
+				out.println("\r\n");
 				long lastModified = file.lastModified();
 				Date modified  = new Date(lastModified);
 				DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 				converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
-				out.println("Last-Modified: " + converter2.format(modified) + " GMT");
-				out.println("Content-type: " + contentMimeType);
-				out.println("Content-length: " + fileLength);
+				out.println("Last-Modified: " + converter2.format(modified) + " GMT\r\n");
+				out.println("\r\n");
+				out.println("Content-type: " + contentMimeType + "\r\n");
+				out.println("\r\n");
+				out.println("Content-length: " + fileLength + "\r\n");
+				out.println("\r\n");
 				out.println(); // blank line between headers and content, very important !
 				out.flush(); // flush character output stream buffer
 				// file
@@ -139,21 +147,29 @@ public class PartialHTTP1Server implements Runnable{
 					byte[] fileData = readFileData(file, fileLength);
 
 					// we send HTTP Headers with data to client
-					out.println("HTTP/1.0 501 Not Implemented");
-					out.println("Server: Java HTTP Server from SSaurel : 1.0");
+					out.println("HTTP/1.0 501 Not Implemented\r\n");
+					out.println("\r\n");
+					out.println("Server: Java HTTP Server from SSaurel : 1.0\r\n");
+					out.println("\r\n");
 					Date localtime = new Date();
 					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Date: " + converter.format(localtime) + " GMT");
-					out.println("Server: Apache/1.3.27 (Unix)");
-					out.println("MIME-version: 1.0");
+					out.println("Date: " + converter.format(localtime) + " GMT\r\n");
+					out.println("\r\n");
+					out.println("Server: Apache/1.3.27 (Unix)\r\n");
+					out.println("\r\n");
+					out.println("MIME-version: 1.0\r\n");
+					out.println("\r\n");
 					long lastModified = file.lastModified();
 					Date modified = new Date(lastModified);
 					DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Last-Modified: " + converter2.format(modified) + " GMT");
-					out.println("Content-type: " + contentMimeType);
-					out.println("Content-length: " + fileLength);
+					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r\n");
+					out.println("\r\n");
+					out.println("Content-type: " + contentMimeType + "\r\n");
+					out.println("\r\n");
+					out.println("Content-length: " + fileLength + "\r\n");
+					out.println("\r\n");
 					out.println(); // blank line between headers and content, very important !
 					out.flush(); // flush character output stream buffer
 					// file
@@ -167,21 +183,29 @@ public class PartialHTTP1Server implements Runnable{
 					byte[] fileData = readFileData(file, fileLength);
 
 					// we send HTTP Headers with data to client
-					out.println("HTTP/1.0 400 Bad Request");
-					out.println("Server: Java HTTP Server");
+					out.println("HTTP/1.0 400 Bad Request\r\n");
+					out.println("\r\n");
+					out.println("Server: Java HTTP Server\r\n");
+					out.println("\r\n");
 					Date localtime = new Date();
 					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Date: " + converter.format(localtime) + " GMT");
-					out.println("Server: Apache/1.3.27 (Unix)");
-					out.println("MIME-version: 1.0");
+					out.println("Date: " + converter.format(localtime) + " GMT\r\n");
+					out.println("\r\n");
+					out.println("Server: Apache/1.3.27 (Unix)\r\n");
+					out.println("\r\n");
+					out.println("MIME-version: 1.0\r\n");
+					out.println("\r\n");
 					long lastModified = file.lastModified();
 					Date modified  = new Date(lastModified);
 					DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Last-Modified: " + converter2.format(modified) + " GMT");
-					out.println("Content-type: " + contentMimeType);
-					out.println("Content-length: " + fileLength);
+					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r\n");
+					out.println("\r\n");
+					out.println("Content-type: " + contentMimeType + "\r\n");
+					out.println("\r\n");
+					out.println("Content-length: " + fileLength + "\r\n");
+					out.println("\r\n");
 					out.println(); // blank line between headers and content, very important !
 					out.flush(); // flush character output stream buffer
 					// file
