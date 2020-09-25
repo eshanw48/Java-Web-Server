@@ -102,11 +102,41 @@ public class PartialHTTP1Server implements Runnable{
 			// we get file requested
 			fileRequested = parse.nextToken();
 
+			String version = parse.nextToken();
+			double num = 0.0;
+
+			for(int i = 0; i < version.length() ; i++)
+			{
+				if(version.charAt(i) == '/' && !Character.isLetter(version.charAt(i+1)))
+				{
+					num = Double.parseDouble(version.substring(i+1));
+				}
+			}
+
+
+			 if(num > 1.0)
+			{
+				System.out.println(num);
+				out.println("HTTP/1.0 505 HTTP Version Not Supported\r\n");
+				out.println("\r\n");
+				out.println(); // blank line between headers and content, very important !
+				out.flush(); // flush character output stream buffer
+			}
+			else if(!version.equals("HTTP/1.0"))
+			{
+				out.println("HTTP/1.0 400 Bad Request\r\n");
+				out.println("\r\n");
+				out.println(); // blank line between headers and content, very important !
+				out.flush(); // flush character output stream buffer
+			}
+
+
+
 
 			// we support only GET, HEAD, and POST methods, we check
 			if (!method.equals("GET")  &&  !method.equals("HEAD") &&  !method.equals("POST")) {
 				//not implemented requests
-				if(method.equals("PUT") || method.equals("DELETE")) {
+				if(method.equals("PUT") || method.equals("DELETE") || method.equals("LINK") || method.equals("UNLINK")) {
 					if (verbose) {
 						System.out.println("501 Not Implemented : " + method + " method.");
 					}
@@ -179,23 +209,38 @@ public class PartialHTTP1Server implements Runnable{
 				int fileLength = (int) file.length();
 				String content = getContentType(fileRequested);
 
+				if(!file.canRead())
+				{
+					out.println("HTTP/1.0 403 Forbidden\r\n");
+					out.println("\r\n");
+					out.println(); // blank line between headers and content, very important !
+					out.flush(); // flush character output stream buffer
+				}
+
 				if (method.equals("GET")) { // GET method so we return content
 					byte[] fileData = readFileData(file, fileLength);
 					// send HTTP Headers
-					out.println("HTTP/1.0 200 OK");
+					out.println("HTTP/1.0 200 OK\r\n");
+					out.println("\r\n");
 					Date localtime = new Date();
 					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Date: " + converter.format(localtime) + " GMT");
-					out.println("Server: Apache/1.3.27 (Unix)");
-					out.println("MIME-version: 1.0");
+					out.println("Date: " + converter.format(localtime) + " GMT\r\n");
+					out.println("\r\n");
+					out.println("Server: Apache/1.3.27 (Unix)\r\n");
+					out.println("\r\n");
+					out.println("MIME-version: 1.0\r\n");
+					out.println("\r\n");
 					long lastModified = file.lastModified();
 					Date modified  = new Date(lastModified);
 					DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Last-Modified: " + converter2.format(modified) + " GMT");
-					out.println("Content-type: " + content);
-					out.println("Content-length: " + fileLength);
+					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r\n");
+					out.println("\r\n");
+					out.println("Content-type: " + content + "\r\n");
+					out.println("\r\n");
+					out.println("Content-length: " + fileLength + "\r\n");
+					out.println("\r\n");
 					out.println(); // blank line between headers and content, very important !
 					out.flush(); // flush character output stream buffer
 
@@ -260,30 +305,13 @@ public class PartialHTTP1Server implements Runnable{
 	}
 
 	private void fileNotFound(PrintWriter out, OutputStream dataOut, String fileRequested) throws IOException {
-		File file = new File(WEB_ROOT, DEFAULT_FILE);
-		int fileLength = (int) file.length();
-		String content = "text/html";
-		byte[] fileData = readFileData(file, fileLength);
 
-		out.println("HTTP/1.0 400 Bad Request");
-		Date localtime = new Date();
-		DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
-		converter.setTimeZone(TimeZone.getTimeZone("GMT"));
-		out.println("Date: " + converter.format(localtime) + " GMT");
-		out.println("Server: Apache/1.3.27 (Unix)");
-		out.println("MIME-version: 1.0");
-		long lastModified = file.lastModified();
-		Date modified  = new Date(lastModified);
-		DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
-		converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
-		out.println("Last-Modified: " + converter2.format(modified) + " GMT");
-		out.println("Content-type: " + content);
-		out.println("Content-length: " + fileLength);
+		out.println("HTTP/1.0 404 Not Found\r\n");
+		out.println("\r\n");
 		out.println(); // blank line between headers and content, very important !
 		out.flush(); // flush character output stream buffer
 
-		dataOut.write(fileData, 0, fileLength);
-		dataOut.flush();
+
 
 		if (verbose) {
 			System.out.println("File " + fileRequested + " not found");
