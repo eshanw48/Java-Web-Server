@@ -7,7 +7,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
-import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class PartialHTTP1Server implements Runnable{
@@ -35,7 +36,9 @@ public class PartialHTTP1Server implements Runnable{
 		try {
 			ServerSocket serverConnect = new ServerSocket(Integer.parseInt(args[0]));
 			System.out.println("Server started.\nListening for connections on port : " + Integer.parseInt(args[0])+ " ...\n");
-			pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
+			pool = new ThreadPoolExecutor(5, 50,
+					60L, TimeUnit.SECONDS,
+					new SynchronousQueue<Runnable>());
 			// we listen until user halts server execution
 			while (true) {
 				PartialHTTP1Server myServer = new PartialHTTP1Server(serverConnect.accept());
@@ -46,7 +49,7 @@ public class PartialHTTP1Server implements Runnable{
 
 				// create dedicated thread to manage the client connection
 				Thread thread = new Thread(myServer);
-
+				System.out.println(pool.getPoolSize());
 				pool.execute(thread);
 
 
@@ -62,16 +65,16 @@ public class PartialHTTP1Server implements Runnable{
 		// we manage our particular client connection
 		BufferedReader in = null; PrintWriter out = null; BufferedOutputStream dataOut = null;
 		String fileRequested = null;
-
-		/*try
+/*
+		try
 		{
-			Thread.sleep(5000);
+			Thread.sleep(3000);
 		}
 		catch(InterruptedException ex)
 		{
 			Thread.currentThread().interrupt();
-		}*/
-
+		}
+*/
 		try {
 
 			// we read characters from the client via input stream on the socket
