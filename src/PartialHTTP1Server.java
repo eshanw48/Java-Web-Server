@@ -114,7 +114,7 @@ public class PartialHTTP1Server implements Runnable{
 			}
 
 
-			 if(num > 1.0)
+			if(num > 1.0)
 			{
 				System.out.println(num);
 				out.println("HTTP/1.0 505 HTTP Version Not Supported\r\n");
@@ -201,24 +201,44 @@ public class PartialHTTP1Server implements Runnable{
 
 			} else {
 				// GET or HEAD method
+
+
+				/*
 				if (fileRequested.endsWith("/")) {
 					fileRequested += DEFAULT_FILE;
 				}
-
+*/
 				File file = new File(WEB_ROOT, fileRequested);
 				int fileLength = (int) file.length();
 				String content = getContentType(fileRequested);
 
-				if(!file.canRead())
+				if(!file.exists())
 				{
-					out.println("HTTP/1.0 403 Forbidden\r\n");
+					out.println("HTTP/1.0 404 Not Found\r\n");
 					out.println("\r\n");
 					out.println(); // blank line between headers and content, very important !
 					out.flush(); // flush character output stream buffer
+					return;
 				}
 
+
+
 				if (method.equals("GET")) { // GET method so we return content
+					if(!file.canRead())
+					{
+						out.println("HTTP/1.0 403 Forbidden\r\n");
+						out.println("\r\n");
+						out.println(); // blank line between headers and content, very important !
+						out.flush(); // flush character output stream buffer
+
+						return;
+
+					}
+
+
 					byte[] fileData = readFileData(file, fileLength);
+
+
 					// send HTTP Headers
 					out.println("HTTP/1.0 200 OK\r\n");
 					out.println("\r\n");
@@ -254,12 +274,7 @@ public class PartialHTTP1Server implements Runnable{
 
 			}
 
-		} catch (FileNotFoundException fnfe) {
-			try {
-				fileNotFound(out, dataOut, fileRequested);
-			} catch (IOException ioe) {
-				System.err.println("Error with file not found exception : " + ioe.getMessage());
-			}
+
 
 		} catch (IOException ioe) {
 			System.err.println("Server error : " + ioe);
