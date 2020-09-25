@@ -121,6 +121,8 @@ public class PartialHTTP1Server implements Runnable{
 				out.println("\r\n");
 				out.println(); // blank line between headers and content, very important !
 				out.flush(); // flush character output stream buffer
+
+				return;
 			}
 			else if(!version.equals("HTTP/1.0"))
 			{
@@ -128,6 +130,8 @@ public class PartialHTTP1Server implements Runnable{
 				out.println("\r\n");
 				out.println(); // blank line between headers and content, very important !
 				out.flush(); // flush character output stream buffer
+
+				return;
 			}
 
 
