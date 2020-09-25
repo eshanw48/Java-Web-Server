@@ -88,41 +88,13 @@ public class PartialHTTP1Server implements Runnable{
 
 			//Request most have 3 parts
 			if(parse.countTokens()!=3){
-				File file = new File(WEB_ROOT, DEFAULT_FILE);
-				int fileLength = (int) file.length();
-				String contentMimeType = "text/html";
-				//read content to return to client
-				byte[] fileData = readFileData(file, fileLength);
 
 				// we send HTTP Headers with data to client
 				out.println("HTTP/1.0 400 Bad Request\r\n");
 				out.println("\r\n");
-				out.println("Server: Java HTTP Server\r\n");
-				out.println("\r\n");
-				Date localtime = new Date();
-				DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
-				converter.setTimeZone(TimeZone.getTimeZone("GMT"));
-				out.println("Date: " + converter.format(localtime) + " GMT\r\n");
-				out.println("\r\n");
-				out.println("Server: Apache/1.3.27 (Unix)\r\n");
-				out.println("\r\n");
-				out.println("MIME-version: 1.0\r\n");
-				out.println("\r\n");
-				long lastModified = file.lastModified();
-				Date modified  = new Date(lastModified);
-				DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
-				converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
-				out.println("Last-Modified: " + converter2.format(modified) + " GMT\r\n");
-				out.println("\r\n");
-				out.println("Content-type: " + contentMimeType + "\r\n");
-				out.println("\r\n");
-				out.println("Content-length: " + fileLength + "\r\n");
-				out.println("\r\n");
 				out.println(); // blank line between headers and content, very important !
 				out.flush(); // flush character output stream buffer
 				// file
-				dataOut.write(fileData, 0, fileLength);
-				dataOut.flush();
 				return;
 			}
 
@@ -140,16 +112,12 @@ public class PartialHTTP1Server implements Runnable{
 					}
 
 					// we return the not supported file to the client
-					File file = new File(WEB_ROOT, DEFAULT_FILE);
-					int fileLength = (int) file.length();
-					String contentMimeType = "text/html";
-					//read content to return to client
-					byte[] fileData = readFileData(file, fileLength);
+
 
 					// we send HTTP Headers with data to client
 					out.println("HTTP/1.0 501 Not Implemented\r\n");
 					out.println("\r\n");
-					out.println("Server: Java HTTP Server from SSaurel : 1.0\r\n");
+					out.println("Server: Java HTTP Server\r\n");
 					out.println("\r\n");
 					Date localtime = new Date();
 					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
@@ -160,21 +128,9 @@ public class PartialHTTP1Server implements Runnable{
 					out.println("\r\n");
 					out.println("MIME-version: 1.0\r\n");
 					out.println("\r\n");
-					long lastModified = file.lastModified();
-					Date modified = new Date(lastModified);
-					DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
-					converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r\n");
-					out.println("\r\n");
-					out.println("Content-type: " + contentMimeType + "\r\n");
-					out.println("\r\n");
-					out.println("Content-length: " + fileLength + "\r\n");
-					out.println("\r\n");
 					out.println(); // blank line between headers and content, very important !
 					out.flush(); // flush character output stream buffer
 					// file
-					dataOut.write(fileData, 0, fileLength);
-					dataOut.flush();
 				}else{//non-existent http requests
 					File file = new File(WEB_ROOT, DEFAULT_FILE);
 					int fileLength = (int) file.length();
