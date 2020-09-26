@@ -292,6 +292,70 @@ public class PartialHTTP1Server implements Runnable{
 					dataOut.flush();
 				}
 
+
+				if(method.equals("HEAD"))
+				{
+					if(!file.canRead())
+					{
+						out.println("HTTP/1.0 403 Forbidden\r\n");
+						out.println("\r\n");
+						out.println(); // blank line between headers and content, very important !
+						out.flush(); // flush character output stream buffer
+
+						return;
+
+					}
+
+
+				//	byte[] fileData = readFileData(file, fileLength);
+
+
+					// send HTTP Headers
+					out.println("HTTP/1.0 200 OK\r");
+					//	out.println("\r");
+					Date localtime = new Date();
+					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
+					out.println("Date: " + converter.format(localtime) + " GMT\r");
+					//	out.println("\r");
+					out.println("Server: Apache/1.3.27 (Unix)\r");
+					//	out.println("\r");
+					out.println("MIME-version: 1.0\r");
+					//    out.println("\r");
+					long lastModified = file.lastModified();
+					Date modified  = new Date(lastModified);
+					DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+					converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
+					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r");
+					//	out.println("\r");
+					out.println("Content-Type: " + content + "\r");
+					//	out.println("\r");
+					out.println("Content-Length: " + fileLength + "\r");
+					//	out.println("\r");
+					out.println("Content-Encoding: identity\r");
+					//	out.println("\r");
+					out.println("Allow: GET, POST, HEAD\r");
+					//	out.println("\r");
+					Calendar calendar = Calendar.getInstance();
+					Date today = calendar.getTime();
+					calendar.add(Calendar.DAY_OF_YEAR, 1);
+					Date tomorrow = calendar.getTime();
+					Date localtime3 = new Date();
+					DateFormat converter3 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
+					out.println("Expires: " + converter3.format(tomorrow) + " GMT\r");
+					//	out.println("\r");
+
+					//out.println(); // blank line between headers and content, very important !
+
+					out.println("\r");
+					out.flush(); // flush character output stream buffer
+
+				//	dataOut.write(fileData, 0, fileLength);
+				//	dataOut.flush();
+
+				}
+
 				if (verbose) {
 					System.out.println("File " + fileRequested + " of type " + content + " returned");
 				}
@@ -364,7 +428,7 @@ public class PartialHTTP1Server implements Runnable{
 		{
 			return "application/x-gzip";
 		}
-		else if(fileRequested.endsWith(".octet-stream"))
+		else if(fileRequested.endsWith("ls"))
 		{
 			return "application/octet-stream";
 		}
