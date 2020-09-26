@@ -8,6 +8,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -47,14 +49,14 @@ public class PartialHTTP1Server implements Runnable{
 				if (verbose) {
 					System.out.println("Connecton opened. (" + new Date() + ")");
 				}
+
 				System.out.println("Pool Size:" + pool.getPoolSize());
 
 				if(pool.getPoolSize()>=50){
-					System.out.println("To much");
+					System.out.println("Service Unavailable");
 					PrintWriter out = new PrintWriter(myServer.connect.getOutputStream());
-					out.println("HTTP/1.0 503 Service Unavailable\r\n");
-					out.println("\r\n");
-					out.println(); // blank line between headers and content, very important !
+					out.println("HTTP/1.0 503 Service Unavailable\r");
+					out.println("\r");
 					out.flush(); // flush character output stream buffer
 					out.close();
 					myServer.connect.close();
@@ -64,9 +66,6 @@ public class PartialHTTP1Server implements Runnable{
 					Thread thread = new Thread(myServer);
 					pool.execute(thread);
 				}
-
-
-
 
 			}
 
@@ -92,16 +91,18 @@ public class PartialHTTP1Server implements Runnable{
 			// get binary output stream to client (for requested data)
 			dataOut = new BufferedOutputStream(connect.getOutputStream());
 
+			int callback = 0;
+			Timer timer = new Timer();
+			TimerTask task = new Helper(out);
+			timer.schedule(task,5000);
+
 			// get first line of the request from the client
 			String input = in.readLine();
+
 			long received = System.currentTimeMillis();
 			float sec = (received-opened)/ 1000F;
 			if(sec>5){
-				out.println("HTTP/1.0 408 Request Timeout\r\n");
-				out.println("\r\n");
-				out.println(); // blank line between headers and content, very important !
-				out.flush(); // flush character output stream buffer
-				// file
+
 				return;
 			}
 
@@ -253,7 +254,7 @@ public class PartialHTTP1Server implements Runnable{
 
 
 
-				if (method.equals("GET")) { // GET method so we return content
+				if (method.equals("GET") || method.equals("POST")) { // GET method so we return content
 					if(!file.canRead())
 					{
 						out.println("HTTP/1.0 403 Forbidden\r\n");
@@ -475,5 +476,21 @@ public class PartialHTTP1Server implements Runnable{
 			System.out.println("File " + fileRequested + " not found");
 		}
 	}
+	class Helper extends TimerTask
+	{
+		PrintWriter out;
 
+		Helper ( PrintWriter out)
+		{
+			this.out = out;
+		}
+		public void run()
+		{
+			out.println("HTTP/1.0 408 Request Timeout\r");
+			out.println("\r");
+			out.flush(); // flush character output stream buffer
+			// file
+			return;
+		}
+	}
 }
