@@ -35,36 +35,7 @@ public class PartialHTTP1Client {
         System.out.println("FROM SERVER: " + modifiedSentence);
         modifiedSentence = inFromServer.readLine();
         System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
+
 
         clientSocket.close();
 

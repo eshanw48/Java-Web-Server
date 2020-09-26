@@ -24,7 +24,6 @@ public class PartialHTTP1Server implements Runnable{
 
 	// verbose mode
 	static final boolean verbose = true;
-
 	// Client Connection via Socket Class
 	private Socket connect;
 
@@ -32,7 +31,6 @@ public class PartialHTTP1Server implements Runnable{
 
 	public PartialHTTP1Server(Socket c) throws IOException{
 		connect = c;
-		c.setSoTimeout(5000);
 	}
 
 	public static void main(String[] args) {
@@ -49,15 +47,25 @@ public class PartialHTTP1Server implements Runnable{
 				if (verbose) {
 					System.out.println("Connecton opened. (" + new Date() + ")");
 				}
-
-				// create dedicated thread to manage the client connection
-				Thread thread = new Thread(myServer);
-
-				if(pool.getPoolSize()==50){
-
-				}
 				System.out.println("Pool Size:" + pool.getPoolSize());
-				pool.execute(thread);
+
+				if(pool.getPoolSize()>=50){
+					System.out.println("To much");
+					PrintWriter out = new PrintWriter(myServer.connect.getOutputStream());
+					out.println("HTTP/1.0 503 Service Unavailable\r\n");
+					out.println("\r\n");
+					out.println(); // blank line between headers and content, very important !
+					out.flush(); // flush character output stream buffer
+					out.close();
+					myServer.connect.close();
+
+				}else{
+					// create dedicated thread to manage the client connection
+					Thread thread = new Thread(myServer);
+					pool.execute(thread);
+				}
+
+
 
 
 			}
@@ -69,24 +77,14 @@ public class PartialHTTP1Server implements Runnable{
 
 	@Override
 	public void run() {
+		long opened = System.currentTimeMillis();
 		// we manage our particular client connection
 		BufferedReader in = null; PrintWriter out = null; BufferedOutputStream dataOut = null;
 		String fileRequested = null;
 
 
-
-/*
-		try
-		{
-			Thread.sleep(3000);
-		}
-		catch(InterruptedException ex)
-		{
-			Thread.currentThread().interrupt();
-		}
-*/
 		try {
-			System.out.println("hi1");
+
 			// we read characters from the client via input stream on the socket
 			in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
 			// we get character output stream to client (for headers)
@@ -96,12 +94,18 @@ public class PartialHTTP1Server implements Runnable{
 
 			// get first line of the request from the client
 			String input = in.readLine();
-
-			if(input==null || input.equals("")){
-				out.println("\r");
-				out.flush();
+			long received = System.currentTimeMillis();
+			float sec = (received-opened)/ 1000F;
+			if(sec>5){
+				out.println("HTTP/1.0 408 Request Timeout\r\n");
+				out.println("\r\n");
+				out.println(); // blank line between headers and content, very important !
+				out.flush(); // flush character output stream buffer
+				// file
 				return;
 			}
+
+
 			// we parse the request with a string tokenizer
 			StringTokenizer parse = new StringTokenizer(input);
 
@@ -382,15 +386,7 @@ public class PartialHTTP1Server implements Runnable{
 
 
 
-		} catch(SocketTimeoutException s){
-			System.out.println("ServerTimeout");
-			out.println("HTTP/1.0 408 Request Timeout\r\n");
-			out.println("\r\n");
-			out.println(); // blank line between headers and content, very important !
-			out.flush(); // flush character output stream buffer
-
-
-		}catch (IOException ioe) {
+		} catch (IOException ioe) {
 			System.err.println("Server error : " + ioe);
 			out.println("HTTP/1.0 500 Internal Server Error\r");
 			out.println("\r");// blank line between headers and content, very important !
