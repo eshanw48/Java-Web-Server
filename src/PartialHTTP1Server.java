@@ -4,6 +4,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
@@ -207,14 +208,17 @@ public class PartialHTTP1Server implements Runnable{
 				// GET or HEAD method
 
 
-				/*
+/*
 				if (fileRequested.endsWith("/")) {
 					fileRequested += DEFAULT_FILE;
 				}
 */
+
+
 				File file = new File(WEB_ROOT, fileRequested);
 				int fileLength = (int) file.length();
 				String content = getContentType(fileRequested);
+
 
 				if(!file.exists())
 				{
@@ -244,28 +248,44 @@ public class PartialHTTP1Server implements Runnable{
 
 
 					// send HTTP Headers
-					out.println("HTTP/1.0 200 OK\r\n");
-					out.println("\r\n");
+					out.println("HTTP/1.0 200 OK\r");
+				//	out.println("\r");
 					Date localtime = new Date();
 					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Date: " + converter.format(localtime) + " GMT\r\n");
-					out.println("\r\n");
-					out.println("Server: Apache/1.3.27 (Unix)\r\n");
-					out.println("\r\n");
-					out.println("MIME-version: 1.0\r\n");
-					out.println("\r\n");
+					out.println("Date: " + converter.format(localtime) + " GMT\r");
+				//	out.println("\r");
+					out.println("Server: Apache/1.3.27 (Unix)\r");
+				//	out.println("\r");
+					out.println("MIME-version: 1.0\r");
+				//    out.println("\r");
 					long lastModified = file.lastModified();
 					Date modified  = new Date(lastModified);
 					DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r\n");
-					out.println("\r\n");
-					out.println("Content-type: " + content + "\r\n");
-					out.println("\r\n");
-					out.println("Content-length: " + fileLength + "\r\n");
-					out.println("\r\n");
-					out.println(); // blank line between headers and content, very important !
+					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r");
+				//	out.println("\r");
+					out.println("Content-Type: " + content + "\r");
+				//	out.println("\r");
+					out.println("Content-Length: " + fileLength + "\r");
+				//	out.println("\r");
+					out.println("Content-Encoding: identity\r");
+				//	out.println("\r");
+					out.println("Allow: GET, POST, HEAD\r");
+				//	out.println("\r");
+					Calendar calendar = Calendar.getInstance();
+					Date today = calendar.getTime();
+					calendar.add(Calendar.DAY_OF_YEAR, 1);
+					Date tomorrow = calendar.getTime();
+					Date localtime3 = new Date();
+					DateFormat converter3 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
+					out.println("Expires: " + converter3.format(tomorrow) + " GMT\r");
+				//	out.println("\r");
+
+					//out.println(); // blank line between headers and content, very important !
+
+					out.println("\r");
 					out.flush(); // flush character output stream buffer
 
 					dataOut.write(fileData, 0, fileLength);
