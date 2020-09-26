@@ -337,8 +337,37 @@ public class PartialHTTP1Server implements Runnable{
 
 	// return supported MIME Types
 	private String getContentType(String fileRequested) {
-		if (fileRequested.endsWith(".htm")  ||  fileRequested.endsWith(".html"))
+		if (fileRequested.endsWith(".html"))
 			return "text/html";
+
+		else if(fileRequested.endsWith(".png"))
+		{
+			return "image/png";
+		}
+		else if(fileRequested.endsWith(".gif"))
+		{
+			return "image/gif";
+		}
+		else if(fileRequested.endsWith(".jpeg"))
+		{
+			return "image/jpeg";
+		}
+		else if(fileRequested.endsWith(".pdf"))
+		{
+			return "application/pdf";
+		}
+		else if(fileRequested.endsWith(".zip"))
+		{
+			return "application/zip";
+		}
+		else if(fileRequested.endsWith(".x-gzip"))
+		{
+			return "application/x-gzip";
+		}
+		else if(fileRequested.endsWith(".octet-stream"))
+		{
+			return "application/octet-stream";
+		}
 		else
 			return "text/plain";
 	}
