@@ -10,6 +10,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.net.SocketTimeoutException;
 
 public class PartialHTTP1Server implements Runnable{
 
@@ -28,8 +29,9 @@ public class PartialHTTP1Server implements Runnable{
 
 	static private ThreadPoolExecutor pool;
 
-	public PartialHTTP1Server(Socket c) {
+	public PartialHTTP1Server(Socket c) throws IOException{
 		connect = c;
+		c.setSoTimeout(5000);
 	}
 
 	public static void main(String[] args) {
@@ -92,7 +94,8 @@ public class PartialHTTP1Server implements Runnable{
 			String input = in.readLine();
 
 			if(input==null || input.equals("")){
-
+				out.println("\r");
+				out.flush();
 				return;
 			}
 			// we parse the request with a string tokenizer
@@ -292,8 +295,19 @@ public class PartialHTTP1Server implements Runnable{
 
 
 
-		} catch (IOException ioe) {
+		} catch(SocketTimeoutException s){
+			out.println("HTTP/1.0 408 Request Timeout\r\n");
+			out.println("\r\n");
+			out.println(); // blank line between headers and content, very important !
+			out.flush(); // flush character output stream buffer
+
+
+		}catch (IOException ioe) {
 			System.err.println("Server error : " + ioe);
+			out.println("HTTP/1.0 500 Internal Server Error\n\r\n");
+			out.println("\r\n");
+			out.println(); // blank line between headers and content, very important !
+			out.flush(); // flush character output stream buffer
 		} finally {
 			try {
 				in.close();
