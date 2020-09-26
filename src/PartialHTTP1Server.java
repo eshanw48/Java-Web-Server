@@ -49,7 +49,11 @@ public class PartialHTTP1Server implements Runnable{
 
 				// create dedicated thread to manage the client connection
 				Thread thread = new Thread(myServer);
-				System.out.println(pool.getPoolSize());
+
+				if(pool.getPoolSize()==50){
+
+				}
+				System.out.println("Pool Size:" + pool.getPoolSize());
 				pool.execute(thread);
 
 
@@ -86,6 +90,11 @@ public class PartialHTTP1Server implements Runnable{
 
 			// get first line of the request from the client
 			String input = in.readLine();
+
+			if(input==null || input.equals("")){
+
+				return;
+			}
 			// we parse the request with a string tokenizer
 			StringTokenizer parse = new StringTokenizer(input);
 
