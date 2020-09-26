@@ -72,6 +72,9 @@ public class PartialHTTP1Server implements Runnable{
 		// we manage our particular client connection
 		BufferedReader in = null; PrintWriter out = null; BufferedOutputStream dataOut = null;
 		String fileRequested = null;
+
+
+
 /*
 		try
 		{
@@ -83,7 +86,7 @@ public class PartialHTTP1Server implements Runnable{
 		}
 */
 		try {
-
+			System.out.println("hi1");
 			// we read characters from the client via input stream on the socket
 			in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
 			// we get character output stream to client (for headers)
@@ -380,6 +383,7 @@ public class PartialHTTP1Server implements Runnable{
 
 
 		} catch(SocketTimeoutException s){
+			System.out.println("ServerTimeout");
 			out.println("HTTP/1.0 408 Request Timeout\r\n");
 			out.println("\r\n");
 			out.println(); // blank line between headers and content, very important !
@@ -388,10 +392,10 @@ public class PartialHTTP1Server implements Runnable{
 
 		}catch (IOException ioe) {
 			System.err.println("Server error : " + ioe);
-			out.println("HTTP/1.0 500 Internal Server Error\n\r\n");
-			out.println("\r\n");
-			out.println(); // blank line between headers and content, very important !
+			out.println("HTTP/1.0 500 Internal Server Error\r");
+			out.println("\r");// blank line between headers and content, very important !
 			out.flush(); // flush character output stream buffer
+			return;
 		} finally {
 			try {
 				in.close();
