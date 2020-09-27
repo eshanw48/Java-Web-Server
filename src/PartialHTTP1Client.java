@@ -6,7 +6,7 @@ public class PartialHTTP1Client {
         String sentence;
         String modifiedSentence;
         BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-        Socket clientSocket = new Socket("127.0.0.1", 8000);
+        Socket clientSocket = new Socket("127.0.0.1", 3456);
         DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         sentence = inFromUser.readLine();
