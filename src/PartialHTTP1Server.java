@@ -254,7 +254,7 @@ public class PartialHTTP1Server implements Runnable{
 							if(modified.compareTo(date1)<0){
 								out.println("HTTP/1.0 304 Not Modified\r");
 								Calendar calendar = Calendar.getInstance();
-								calendar.add(Calendar.DAY_OF_YEAR, 1);
+								calendar.add(Calendar.YEAR, 1);
 								Date tomorrow = calendar.getTime();
 								DateFormat converter3 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 								converter3.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -285,7 +285,7 @@ public class PartialHTTP1Server implements Runnable{
 					out.println("Content-Encoding: identity\r");
 					out.println("Allow: GET, POST, HEAD\r");
 					Calendar calendar = Calendar.getInstance();
-					calendar.add(Calendar.DAY_OF_YEAR, 1);
+					calendar.add(Calendar.YEAR, 1);
 					Date tomorrow = calendar.getTime();
 					DateFormat converter3 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -332,7 +332,7 @@ public class PartialHTTP1Server implements Runnable{
 					out.println("Allow: GET, POST, HEAD\r");
 
 					Calendar calendar = Calendar.getInstance();
-					calendar.add(Calendar.DAY_OF_YEAR, 1);
+					calendar.add(Calendar.YEAR, 1);
 					Date tomorrow = calendar.getTime();
 					DateFormat converter3 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
