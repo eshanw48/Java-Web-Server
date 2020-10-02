@@ -10,8 +10,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class PartialHTTP1Server implements Runnable{
+/**
+ * @author Shivam Patel
+ * @author Dhanush Gandham
+ * @author Eshan Wadhwa
+ */
 
+/**
+ * We created a simple Java Web Server that supports HTTP 1.0 requests. We accept multiple socket connections,
+ * and pass those connections into threads, which are managed by the thread pool executor. We read requests from the client,
+ * and send back the appropriate HTTP response.
+ */
+public class PartialHTTP1Server implements Runnable{
 
 	static final File WEB_ROOT = new File(".");
 
@@ -22,6 +32,12 @@ public class PartialHTTP1Server implements Runnable{
 	static private ThreadPoolExecutor pool;
 
 	private BufferedReader IN = null;
+
+	/**
+	 *
+	 * @param c Takes in a Socket as an argument, which helps with communication between the server and the client.
+	 * @throws IOException Throws an exception if there is an error with BufferedReader.
+	 */
 	public PartialHTTP1Server(Socket c) throws IOException {
 		connect = c;
 		try {
@@ -32,15 +48,20 @@ public class PartialHTTP1Server implements Runnable{
 
 	}
 
+	/**
+	 *
+	 * @param args Takes in the port number for which the server is hosted on.
+	 */
 	public static void main(String[] args) {
 
+		// We create a server socket to accept incoming connections from the client.
 		try {
 			ServerSocket serverConnect = new ServerSocket(Integer.parseInt(args[0]));
 			System.out.println("Server started.\nListening for connections on port : " + Integer.parseInt(args[0])+ " ...\n");
 			pool = new ThreadPoolExecutor(5, 50,
 					60L, TimeUnit.SECONDS,
 					new SynchronousQueue<Runnable>());
-			// we listen until user halts server execution
+			// We listen until user ends server execution.
 			while (true) {
 				PartialHTTP1Server myServer = new PartialHTTP1Server(serverConnect.accept());
 
@@ -50,12 +71,13 @@ public class PartialHTTP1Server implements Runnable{
 
 				System.out.println("Pool Size:" + pool.getPoolSize());
 
+				// We manage the threads here.
 				if(pool.getPoolSize()>=50){
 					System.out.println("Service Unavailable");
 					PrintWriter out = new PrintWriter(myServer.connect.getOutputStream());
 					out.println("HTTP/1.0 503 Service Unavailable\r");
 					out.println("\r");
-					out.flush(); // flush character output stream buffer
+					out.flush();
 					out.close();
 					myServer.connect.close();
 
@@ -72,6 +94,11 @@ public class PartialHTTP1Server implements Runnable{
 		}
 	}
 
+	/**
+	 *
+	 * @return String which has the client's input.
+	 * @throws IOException
+	 */
 	private String receive() throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String line;
@@ -81,20 +108,22 @@ public class PartialHTTP1Server implements Runnable{
 		return sb.toString();
 	}
 
+	/**
+	 * The threads execute this code, so that the server and client have interaction.
+	 */
 	@Override
 	public void run() {
 		long opened = System.currentTimeMillis();
-		// we manage our particular client connection
-		/*BufferedReader in = null;*/ PrintWriter out = null; BufferedOutputStream dataOut = null;
+
+		 PrintWriter out = null; BufferedOutputStream dataOut = null;
 		String fileRequested = null;
 
 
 		try {
 
-			// we read characters from the client via input stream on the socket
-			// we get character output stream to client (for headers)
+			// We read characters from the client via input stream on the socket.
+			// We get character output stream to the client.
 			out = new PrintWriter(connect.getOutputStream());
-			// get binary output stream to client (for requested data)
 			dataOut = new BufferedOutputStream(connect.getOutputStream());
 
 			Timer timer = new Timer();
@@ -102,7 +131,6 @@ public class PartialHTTP1Server implements Runnable{
 			timer.schedule(task,5000);
 
 			// get first line of the request from the client
-
 			String header = receive();
 			String request;
 			String request2;
@@ -113,11 +141,9 @@ public class PartialHTTP1Server implements Runnable{
 			}else if(lines.length==1){
 				request=lines[0];
 			}else{
-				// we send HTTP Headers with data to client
 				out.println("HTTP/1.0 400 Bad Request\r");
 				out.println("\r");
-				out.flush(); // flush character output stream buffer
-				// file
+				out.flush();
 				return;
 			}
 
@@ -128,25 +154,24 @@ public class PartialHTTP1Server implements Runnable{
 				return;
 			}
 
-			// we parse the request with a string tokenizer
+			// We parse the request with a string tokenizer.
 			System.out.println(header);
 			StringTokenizer parse = new StringTokenizer(request);
 
-			//Request most have 3 parts
+			// Request most have 3 parts.
 			if(parse.countTokens()!=3){
 
-				// we send HTTP Headers with data to client
 				out.println("HTTP/1.0 400 Bad Request\r");
 				out.println("\r");
-				out.flush(); // flush character output stream buffer
-				// file
+				out.flush();
+
 				return;
 			}
 
-			String method = parse.nextToken(); // we get the HTTP method of the client
-			// we get file requested
+			String method = parse.nextToken(); // We get the HTTP method of the client.
+			// We get file requested.
 			fileRequested = parse.nextToken();
-
+			// We get the HTTP version.
 			String version = parse.nextToken();
 			double num = 0.0;
 
@@ -164,48 +189,47 @@ public class PartialHTTP1Server implements Runnable{
 				{
 					out.println("HTTP/1.0 400 Bad Request\r");
 					out.println("\r");
-					out.flush(); // flush character output stream buffer
+					out.flush();
 
 					return;
 
 			}
 			}
-
+			//If http version > 1.0, then the version is not supported.
 			 if(num > 1.0)
 			{
 				System.out.println(num);
 				out.println("HTTP/1.0 505 HTTP Version Not Supported\r");
 				out.println("\r");
-				out.flush(); // flush character output stream buffer
+				out.flush();
 
 				return;
 			}
 
 
-			// we support only GET, HEAD, and POST methods, we check
+			// We support only GET, HEAD, and POST methods.
 			if (!method.equals("GET")  &&  !method.equals("HEAD") &&  !method.equals("POST")) {
-				//not implemented requests
+				// Not implemented requests.
 				if(method.equals("PUT") || method.equals("DELETE") || method.equals("LINK") || method.equals("UNLINK")) {
 					if (verbose) {
 						System.out.println("501 Not Implemented : " + method + " method.");
 					}
 
-					// we send HTTP Headers with data to client
+
 					out.println("HTTP/1.0 501 Not Implemented\r");
 					out.println("\r");
-					out.flush(); // flush character output stream buffer
-					// file
-				}else{//non-existent http requests
+					out.flush();
 
-					// we send HTTP Headers with data to client
+				}else{// Non-existent http requests.
+
+
 					out.println("HTTP/1.0 400 Bad Request\r");
 					out.println("\r");
-					out.flush(); // flush character output stream buffer
-					// file
+					out.flush();
+
 				}
 
 			} else {
-				// GET or HEAD method
 
 				File file = new File(WEB_ROOT, fileRequested);
 				int fileLength = (int) file.length();
@@ -216,18 +240,18 @@ public class PartialHTTP1Server implements Runnable{
 				{
 					out.println("HTTP/1.0 404 Not Found\r");
 					out.println("\r");
-					out.flush(); // flush character output stream buffer
+					out.flush();
 					return;
 				}
 
 
-
-				if (method.equals("GET") || method.equals("POST")) { // GET method so we return content
+				//If method is GET or POST.
+				if (method.equals("GET") || method.equals("POST")) {
 					if(!file.canRead())
 					{
 						out.println("HTTP/1.0 403 Forbidden\r");
 						out.println("\r");
-						out.flush(); // flush character output stream buffer
+						out.flush();
 
 						return;
 
@@ -265,7 +289,7 @@ public class PartialHTTP1Server implements Runnable{
 								converter3.setTimeZone(TimeZone.getTimeZone("GMT"));
 								out.println("Expires: " + converter3.format(tomorrow) + " GMT\r");
 								out.println("\r");
-								out.flush(); // flush character output stream buffer
+								out.flush();
 
 								return;
 							}
@@ -276,7 +300,7 @@ public class PartialHTTP1Server implements Runnable{
 					}
 
 
-					// send HTTP Headers
+
 					out.println("HTTP/1.0 200 OK\r");
 					Date localtime = new Date();
 					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
@@ -296,13 +320,13 @@ public class PartialHTTP1Server implements Runnable{
 					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
 					out.println("Expires: " + converter3.format(tomorrow) + " GMT\r");
 					out.println("\r");
-					out.flush(); // flush character output stream buffer
+					out.flush();
 
 					dataOut.write(fileData, 0, fileLength);
 					dataOut.flush();
 				}
 
-
+				// If method is HEAD.
 				if(method.equals("HEAD"))
 				{
 					if(!file.canRead())
@@ -314,7 +338,6 @@ public class PartialHTTP1Server implements Runnable{
 
 					}
 
-					// send HTTP Headers
 					out.println("HTTP/1.0 200 OK\r");
 
 					Date localtime = new Date();
@@ -356,9 +379,10 @@ public class PartialHTTP1Server implements Runnable{
 		} catch (IOException ioe) {
 			System.err.println("Server error : " + ioe);
 			out.println("HTTP/1.0 500 Internal Server Error\r");
-			out.println("\r");// blank line between headers and content, very important !
-			out.flush(); // flush character output stream buffer
+			out.println("\r");
+			out.flush();
 			return;
+			// We close all the connections here.
 		} finally {
 			try {
 				try {
@@ -369,7 +393,7 @@ public class PartialHTTP1Server implements Runnable{
 				IN.close();
 				out.close();
 				dataOut.close();
-				connect.close(); // we close socket connection
+				connect.close();
 			} catch (Exception e) {
 				System.err.println("Error closing stream : " + e.getMessage());
 			}
@@ -382,6 +406,13 @@ public class PartialHTTP1Server implements Runnable{
 
 	}
 
+	/**
+	 *
+	 * @param file File which we want to read.
+	 * @param fileLength Length of the file we are reading.
+	 * @return We return the Payload.
+	 * @throws IOException
+	 */
 	private byte[] readFileData(File file, int fileLength) throws IOException {
 		FileInputStream fileIn = null;
 		byte[] fileData = new byte[fileLength];
@@ -397,7 +428,11 @@ public class PartialHTTP1Server implements Runnable{
 		return fileData;
 	}
 
-	// return supported MIME Types
+	/**
+	 *
+	 * @param fileRequested File extension.
+	 * @return Return the MIME types.
+	 */
 	private String getContentType(String fileRequested) {
 		if (fileRequested.endsWith(".html"))
 			return "text/html";
@@ -434,6 +469,9 @@ public class PartialHTTP1Server implements Runnable{
 			return "text/plain";
 	}
 
+	/**
+	 * Helper Class to help us with Request Timeout.
+	 */
 	class Helper extends TimerTask
 	{
 		PrintWriter out;
