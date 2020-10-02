@@ -152,14 +152,26 @@ public class PartialHTTP1Server implements Runnable{
 
 			for(int i = 0; i < version.length() ; i++)
 			{
-				if(version.charAt(i) == '/' && !Character.isLetter(version.charAt(i+1)))
+				try
+				{
+
+				 if(version.charAt(i) == '/')
 				{
 					num = Double.parseDouble(version.substring(i+1));
 				}
+				}
+				catch(Exception e)
+				{
+					out.println("HTTP/1.0 400 Bad Request\r");
+					out.println("\r");
+					out.flush(); // flush character output stream buffer
+
+					return;
+
+			}
 			}
 
-
-			if(num > 1.0)
+			 if(num > 1.0)
 			{
 				System.out.println(num);
 				out.println("HTTP/1.0 505 HTTP Version Not Supported\r");
@@ -168,14 +180,7 @@ public class PartialHTTP1Server implements Runnable{
 
 				return;
 			}
-			else if(!version.equals("HTTP/1.0"))
-			{
-				out.println("HTTP/1.0 400 Bad Request\r");
-				out.println("\r");
-				out.flush(); // flush character output stream buffer
 
-				return;
-			}
 
 			// we support only GET, HEAD, and POST methods, we check
 			if (!method.equals("GET")  &&  !method.equals("HEAD") &&  !method.equals("POST")) {
