@@ -107,6 +107,7 @@ public class PartialHTTP1Server implements Runnable{
 		}
 		//System.out.println(sb.toString());
 		return sb.toString();
+
 	}
 
 	/**
@@ -236,17 +237,17 @@ public class PartialHTTP1Server implements Runnable{
 				String content = getContentType(fileRequested);
 
 
-				if(!file.exists())
-				{
-					out.println("HTTP/1.0 404 Not Found\r");
-					out.println("\r");
-					out.flush();
-					return;
-				}
-
-
 				//If method is GET or POST.
 				if (method.equals("GET")) {
+
+					if(!file.exists())
+					{
+						out.println("HTTP/1.0 404 Not Found\r");
+						out.println("\r");
+						out.flush();
+						return;
+					}
+
 					if(!file.canRead())
 					{
 						out.println("HTTP/1.0 403 Forbidden\r");
@@ -275,7 +276,7 @@ public class PartialHTTP1Server implements Runnable{
 							}
 						}
 						mod=mod.trim();
-						//System.out.println(mod + " is a different mod");
+						System.out.println(mod + " is a different mod");
 						Date date1 = null;
 						try {
 							date1 = formatter.parse(mod);
@@ -328,19 +329,43 @@ public class PartialHTTP1Server implements Runnable{
 
 				if(method.equals("POST")){
 
-					if(!file.canRead())
+					/*ProcessBuilder pb = new ProcessBuilder("./cgi_bin/exec.cgi");
+					Process p = pb.start();
+					OutputStream os = p.getOutputStream();
+					String s = "";
+					os.write(s.getBytes());
+
+					os.close();
+					try (var reader = new BufferedReader(
+							new InputStreamReader(p.getInputStream()))) {
+
+						String line;
+						while ((line = reader.readLine()) != null) {
+							System.out.println(line);
+						}
+					}*/
+
+					/*if(!file.canRead())
 					{
 						out.println("HTTP/1.0 403 Forbidden\r");
 						out.println("\r");
 						out.flush();
 
 						return;
-
-					}
+					}*/
 
 					System.out.println(fileRequested);
+
 					if(!fileRequested.endsWith(".cgi")){
 						out.println("HTTP/1.0 405 Method Not Allowed\r");
+						out.println("\r");
+						out.flush();
+						return;
+					}
+
+					if(!file.exists())
+					{
+						out.println("HTTP/1.0 404 Not Found\r");
 						out.println("\r");
 						out.flush();
 						return;
@@ -456,6 +481,15 @@ public class PartialHTTP1Server implements Runnable{
 				// If method is HEAD.
 				if(method.equals("HEAD"))
 				{
+
+					if(!file.exists())
+					{
+						out.println("HTTP/1.0 404 Not Found\r");
+						out.println("\r");
+						out.flush();
+						return;
+					}
+
 					if(!file.canRead())
 					{
 						out.println("HTTP/1.0 403 Forbidden\r");
