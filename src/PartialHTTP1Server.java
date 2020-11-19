@@ -99,16 +99,19 @@ public class PartialHTTP1Server implements Runnable{
 	 * @return String which has the client's input.
 	 * @throws IOException
 	 */
+
 	private String receive() throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String line;
-		while ((line = IN.readLine()) != null && !line.isEmpty()) {
+		while (IN.ready()) {
+			line = IN.readLine();
 			sb.append(line).append("\r\n");
 		}
 		//System.out.println(sb.toString());
 		return sb.toString();
 
 	}
+
 
 	/**
 	 * The threads execute this code, so that the server and client have interaction.
@@ -135,6 +138,8 @@ public class PartialHTTP1Server implements Runnable{
 
 			// get first line of the request from the client
 			String header = receive();
+			//String header2 = receive2();
+			//System.out.println(header2);
 			String request;
 			String request2;
 			String lines[] = header.split("\r?\n");
@@ -212,14 +217,15 @@ public class PartialHTTP1Server implements Runnable{
 			if (!method.equals("GET")  &&  !method.equals("HEAD") &&  !method.equals("POST")) {
 				// Not implemented requests.
 				if(method.equals("PUT") || method.equals("DELETE") || method.equals("LINK") || method.equals("UNLINK")) {
-					if (verbose) {
-						//System.out.println("501 Not Implemented : " + method + " method.");
-					}
+					/*if (verbose) {
+						System.out.println("501 Not Implemented : " + method + " method.");
+					}*/
 
 
 					out.println("HTTP/1.0 501 Not Implemented\r");
 					out.println("\r");
 					out.flush();
+					return;
 
 				}else{// Non-existent http requests.
 
@@ -227,6 +233,7 @@ public class PartialHTTP1Server implements Runnable{
 					out.println("HTTP/1.0 400 Bad Request\r");
 					out.println("\r");
 					out.flush();
+					return;
 
 				}
 
@@ -237,7 +244,7 @@ public class PartialHTTP1Server implements Runnable{
 				String content = getContentType(fileRequested);
 
 
-				//If method is GET or POST.
+				//If method is GET
 				if (method.equals("GET")) {
 
 					if(!file.exists())
@@ -268,156 +275,6 @@ public class PartialHTTP1Server implements Runnable{
 
 
 					if(lines.length > 1) {
-						String mod="";
-						for (int i = 0; i < lines[1].length(); i++) {
-							if (lines[1].charAt(i) == ':' ) {
-								mod = lines[1].substring(i+1);
-								break;
-							}
-						}
-						mod=mod.trim();
-						System.out.println(mod + " is a different mod");
-						Date date1 = null;
-						try {
-							date1 = formatter.parse(mod);
-							formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-							if(modified.compareTo(date1)<0){
-								out.println("HTTP/1.0 304 Not Modified\r");
-								Calendar calendar = Calendar.getInstance();
-								calendar.add(Calendar.YEAR, 1);
-								Date tomorrow = calendar.getTime();
-								DateFormat converter3 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
-								converter3.setTimeZone(TimeZone.getTimeZone("GMT"));
-								out.println("Expires: " + converter3.format(tomorrow) + " GMT\r");
-								out.println("\r");
-								out.flush();
-
-								return;
-							}
-						} catch(ParseException ioe){
-							System.out.println("Is not a valid date");
-						}
-
-					}
-
-
-
-					out.println("HTTP/1.0 200 OK\r");
-					Date localtime = new Date();
-					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
-					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Date: " + converter.format(localtime) + " GMT\r");
-					out.println("Server: Apache/1.3.27 (Unix)\r");
-					out.println("MIME-version: 1.0\r");
-					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r");
-					out.println("Content-Type: " + content + "\r");
-					out.println("Content-Length: " + fileLength + "\r");
-					out.println("Content-Encoding: identity\r");
-					out.println("Allow: GET, POST, HEAD\r");
-					Calendar calendar = Calendar.getInstance();
-					calendar.add(Calendar.YEAR, 1);
-					Date tomorrow = calendar.getTime();
-					DateFormat converter3 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
-					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
-					out.println("Expires: " + converter3.format(tomorrow) + " GMT\r");
-					out.println("\r");
-					out.flush();
-
-					dataOut.write(fileData, 0, fileLength);
-					dataOut.flush();
-				}
-
-				if(method.equals("POST")){
-
-					/*ProcessBuilder pb = new ProcessBuilder("./cgi_bin/exec.cgi");
-					Process p = pb.start();
-					OutputStream os = p.getOutputStream();
-					String s = "";
-					os.write(s.getBytes());
-
-					os.close();
-					try (var reader = new BufferedReader(
-							new InputStreamReader(p.getInputStream()))) {
-
-						String line;
-						while ((line = reader.readLine()) != null) {
-							System.out.println(line);
-						}
-					}*/
-
-					/*if(!file.canRead())
-					{
-						out.println("HTTP/1.0 403 Forbidden\r");
-						out.println("\r");
-						out.flush();
-
-						return;
-					}*/
-
-					System.out.println(fileRequested);
-
-					if(!fileRequested.endsWith(".cgi")){
-						out.println("HTTP/1.0 405 Method Not Allowed\r");
-						out.println("\r");
-						out.flush();
-						return;
-					}
-
-					if(!file.exists())
-					{
-						out.println("HTTP/1.0 404 Not Found\r");
-						out.println("\r");
-						out.flush();
-						return;
-					}
-
-					boolean content_type = false;
-					boolean content_length = false;
-
-					for(int i = 1; i < lines.length; i++){
-						StringTokenizer parse_temp = new StringTokenizer(lines[i]);
-						if(parse_temp.countTokens() != 2){
-							out.println("HTTP/1.0 400 Bad Request\r");
-							out.println("\r");
-							out.flush();
-							return;
-						}
-							String token1 = parse_temp.nextToken();
-							String token2 = parse_temp.nextToken();
-							if(token1.equals("Content-Length:")){
-								try{
-									Integer.parseInt(token2);
-									content_length = true;
-								}catch(Exception e){
-
-								}
-							}else if(token1.equals("Content-Type:")){
-								content_type = true;
-							}
-					}
-
-					if(!content_type){
-						out.println("HTTP/1.0 500 Internal Server Error\r");
-						out.println("\r");
-						out.flush();
-						return;
-					}if(!content_length){
-						out.println("HTTP/1.0 411 Length Required\r");
-						out.println("\r");
-						out.flush();
-						return;
-					}
-
-
-					byte[] fileData = readFileData(file, fileLength);
-					long lastModified = file.lastModified();
-					Date modified  = new Date(lastModified);
-					DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
-					converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
-					DateFormat formatter=new SimpleDateFormat("E,dd MMM yyyy HH:mm:ss");
-
-
-					if(lines.length==2) {
 						String mod="";
 						for (int i = 0; i < lines[1].length(); i++) {
 							if (lines[1].charAt(i) == ':' ) {
@@ -475,11 +332,251 @@ public class PartialHTTP1Server implements Runnable{
 
 					dataOut.write(fileData, 0, fileLength);
 					dataOut.flush();
+				} else if(method.equals("POST")){
 
+					if(!fileRequested.endsWith(".cgi")){
+						out.println("HTTP/1.0 405 Method Not Allowed\r");
+						out.println("\r");
+						out.flush();
+						return;
+					}
+
+					if(!file.exists())
+					{
+						out.println("HTTP/1.0 404 Not Found\r");
+						out.println("\r");
+						out.flush();
+						return;
+					}
+
+					Process p = null;
+					String s = "";
+					//System.out.println(fileRequested);
+
+					boolean content_type = false;
+					boolean content_length = false;
+
+					String contentLength = "";
+					String scriptName = "";
+					String httpFrom = "";
+					String httpUserAgent = "";
+					for(int i = 1; i < lines.length; i++){
+						if(lines[i].isEmpty()){
+							if(i < lines.length-1){
+								s = lines[i+1];
+								System.out.println(s);
+								if(s.contains("!!")){
+									s = s.replaceAll("!!", "!");
+								}
+								if(s.contains("!@")){
+									s = s.replaceAll("!@", "@");
+								}
+								if(s.contains("!*")){
+									s = s.replaceAll("!*", "*");
+								}
+								if(s.contains("!'")){
+									s = s.replaceAll("!'", "'");
+								}
+								if(s.contains("!(")){
+									s = s.replaceAll("!\\(", "(");
+								}
+								if(s.contains("!)")){
+									s = s.replaceAll("!\\)", ")");
+								}
+								if(s.contains("!$")){
+									s = s.replaceAll("!$", "$");
+								}
+								if(s.contains("!:")){
+									s = s.replaceAll("!:", ":");
+								}
+								if(s.contains("!;")){
+									s = s.replaceAll("!;", ";");
+								}
+								if(s.contains("!+")){
+									s = s.replaceAll("!+", "+");
+								}
+								if(s.contains("!,")){
+									s = s.replaceAll("!,", ",");
+								}
+								if(s.contains("!/")){
+									s = s.replaceAll("!/", "/");
+								}
+								if(s.contains("!?")){
+									s = s.replaceAll("!?", "?");
+								}
+								if(s.contains("!#")){
+									s = s.replaceAll("!#", "#");
+								}
+								if(s.contains("![")){
+									s = s.replaceAll("!\\[", "[");
+								}
+								if(s.contains("!]")){
+									s = s.replaceAll("!]", "]");
+								}
+								if(s.contains("! ")){
+									s = s.replaceAll("! ", " ");
+								}
+								System.out.println(s);
+
+							}
+							break;
+						}
+
+						StringTokenizer parse_temp = new StringTokenizer(lines[i]);
+
+						if(parse_temp.countTokens() != 2){
+							out.println("HTTP/1.0 400 Bad Request\r");
+							out.println("\r");
+							out.flush();
+							return;
+						}
+							String token1 = parse_temp.nextToken();
+							String token2 = parse_temp.nextToken();
+							if(token1.equals("Content-Length:")){
+								try{
+									contentLength = token2;
+									Integer.parseInt(token2);
+
+									content_length = true;
+								}catch(Exception e){
+
+								}
+							}else if(token1.equals("Content-Type:")){
+								content_type = true;
+							}else if(token1.equals("From:")){
+								httpFrom =token2;
+							}else if(token1.equals("User-Agent:")){
+								httpUserAgent =token2;
+							}
+					}
+
+					try {
+
+						ProcessBuilder pb = new ProcessBuilder("." + fileRequested);
+						pb.environment().put("CONTENT_LENGTH",contentLength);
+						pb.environment().put("SCRIPT_NAME",fileRequested);
+						pb.environment().put("HTTP_FROM",httpFrom);
+						pb.environment().put("HTTP_USER_AGENT",httpUserAgent);
+						p = pb.start();
+
+					}catch(Exception e){
+						out.println("HTTP/1.0 403 Forbidden\r");
+						out.println("\r");
+						out.flush();
+
+						return;
+					}
+					OutputStream os = p.getOutputStream();
+					os.write(s.getBytes());
+					
+
+					if(!content_type){
+						out.println("HTTP/1.0 500 Internal Server Error\r");
+						out.println("\r");
+						out.flush();
+						return;
+					}if(!content_length){
+						out.println("HTTP/1.0 411 Length Required\r");
+						out.println("\r");
+						out.flush();
+						return;
+					}
+		
+
+					byte[] fileData = readFileData(file, fileLength);
+					long lastModified = file.lastModified();
+					Date modified  = new Date(lastModified);
+					DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+					converter2.setTimeZone(TimeZone.getTimeZone("GMT"));
+					DateFormat formatter=new SimpleDateFormat("E,dd MMM yyyy HH:mm:ss");
+
+
+					if(lines.length == 2) {
+						String mod="";
+						for (int i = 0; i < lines[1].length(); i++) {
+							if (lines[1].charAt(i) == ':' ) {
+								mod = lines[1].substring(i+1);
+								break;
+							}
+						}
+						mod=mod.trim();
+						//System.out.println(mod + " is a different mod");
+						Date date1 = null;
+						try {
+							date1 = formatter.parse(mod);
+							formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+							if(modified.compareTo(date1)<0){
+								out.println("HTTP/1.0 304 Not Modified\r");
+								Calendar calendar = Calendar.getInstance();
+								calendar.add(Calendar.YEAR, 1);
+								Date tomorrow = calendar.getTime();
+								DateFormat converter3 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+								converter3.setTimeZone(TimeZone.getTimeZone("GMT"));
+								out.println("Expires: " + converter3.format(tomorrow) + " GMT\r");
+								out.println("\r");
+								out.flush();
+
+								return;
+							}
+						} catch(ParseException ioe){
+							//System.out.println("Is not a valid date");
+						}
+
+					}
+
+					os.close();
+					
+					String payload = "";
+					try (var reader = new BufferedReader(
+							new InputStreamReader(p.getInputStream()))) {
+
+						String line;
+						StringBuilder getPayload = new StringBuilder();
+						while ((line = reader.readLine()) != null) {
+							getPayload.append(line+'\n');
+						}
+						payload = getPayload.toString();
+						System.out.println(payload.length());
+
+					}
+					System.out.println("payload: <" + payload + ">");
+					if(payload.isEmpty()){
+
+						out.println("HTTP/1.0 204 No Content\r");
+						out.println("\r");
+						out.flush();
+						return;
+					}
+
+					out.println("HTTP/1.0 200 OK\r");
+					Date localtime = new Date();
+					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
+					out.println("Date: " + converter.format(localtime) + " GMT\r");
+					out.println("Server: Apache/1.3.27 (Unix)\r");
+					out.println("MIME-version: 1.0\r");
+					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r");
+					out.println("Content-Type: " + "text/html" + "\r");
+					out.println("Content-Length: " + payload.length() + "\r");
+					out.println("Content-Encoding: identity\r");
+					out.println("Allow: GET, POST, HEAD\r");
+					Calendar calendar = Calendar.getInstance();
+					calendar.add(Calendar.YEAR, 1);
+					Date tomorrow = calendar.getTime();
+					DateFormat converter3 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
+					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
+					out.println("Expires: " + converter3.format(tomorrow) + " GMT\r");
+
+					out.println("\r");
+					out.flush();	
+				
+					dataOut.write(payload.getBytes());
+					dataOut.flush();			
+			
 				}
 
 				// If method is HEAD.
-				if(method.equals("HEAD"))
+				else if(method.equals("HEAD"))
 				{
 
 					if(!file.exists())
@@ -539,6 +636,7 @@ public class PartialHTTP1Server implements Runnable{
 
 		} catch (IOException ioe) {
 			System.err.println("Server error : " + ioe);
+			ioe.printStackTrace();
 			out.println("HTTP/1.0 500 Internal Server Error\r");
 			out.println("\r");
 			out.flush();
