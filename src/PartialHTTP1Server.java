@@ -332,10 +332,12 @@ public class PartialHTTP1Server implements Runnable{
 
 					dataOut.write(fileData, 0, fileLength);
 					dataOut.flush();
+
+					//This is the POST method and it supports the cgi scripts along with doing decoding with the paramters
 				} else if(method.equals("POST")){
 
 					if(!fileRequested.endsWith(".cgi")){
-						out.println("HTTP/1.0 405 Method Not Allowed\r");
+						out.println("HTTP/1.0 405 Method Not Allowed\r"); // This statement checks to see if the file is of type cgi
 						out.println("\r");
 						out.flush();
 						return;
@@ -343,7 +345,7 @@ public class PartialHTTP1Server implements Runnable{
 
 					if(!file.exists())
 					{
-						out.println("HTTP/1.0 404 Not Found\r");
+						out.println("HTTP/1.0 404 Not Found\r"); //This statement checks if the file exists or is currently in the path or the directory 
 						out.println("\r");
 						out.flush();
 						return;
@@ -360,7 +362,7 @@ public class PartialHTTP1Server implements Runnable{
 					String scriptName = "";
 					String httpFrom = "";
 					String httpUserAgent = "";
-					for(int i = 1; i < lines.length; i++){
+					for(int i = 1; i < lines.length; i++){ //This for loop goes through all kinds of characters that we need to decode for the cgi scripts
 						if(lines[i].isEmpty()){
 							if(i < lines.length-1){
 								s = lines[i+1];
@@ -425,14 +427,14 @@ public class PartialHTTP1Server implements Runnable{
 						StringTokenizer parse_temp = new StringTokenizer(lines[i]);
 
 						if(parse_temp.countTokens() != 2){
-							out.println("HTTP/1.0 400 Bad Request\r");
+							out.println("HTTP/1.0 400 Bad Request\r"); // Checks if the tokens are invalid or if the input was not properly formatted
 							out.println("\r");
 							out.flush();
 							return;
 						}
 							String token1 = parse_temp.nextToken();
 							String token2 = parse_temp.nextToken();
-							if(token1.equals("Content-Length:")){
+							if(token1.equals("Content-Length:")){ // Grabs the content length
 								try{
 									contentLength = token2;
 									Integer.parseInt(token2);
@@ -441,26 +443,26 @@ public class PartialHTTP1Server implements Runnable{
 								}catch(Exception e){
 
 								}
-							}else if(token1.equals("Content-Type:")){
+							}else if(token1.equals("Content-Type:")){ // Grabs the content type
 								content_type = true;
-							}else if(token1.equals("From:")){
+							}else if(token1.equals("From:")){ // Grabs the From header
 								httpFrom =token2;
-							}else if(token1.equals("User-Agent:")){
+							}else if(token1.equals("User-Agent:")){ // Grabs the User-Agent header
 								httpUserAgent =token2;
 							}
 					}
 
 					try {
 
-						ProcessBuilder pb = new ProcessBuilder("." + fileRequested);
-						pb.environment().put("CONTENT_LENGTH",contentLength);
-						pb.environment().put("SCRIPT_NAME",fileRequested);
-						pb.environment().put("HTTP_FROM",httpFrom);
-						pb.environment().put("HTTP_USER_AGENT",httpUserAgent);
+						ProcessBuilder pb = new ProcessBuilder("." + fileRequested); // Create a processBuilder that will handle the environemental variables
+						pb.environment().put("CONTENT_LENGTH",contentLength); // Prints out content length environmental variable
+						pb.environment().put("SCRIPT_NAME",fileRequested); // Prints out name of the file environmental variable
+						pb.environment().put("HTTP_FROM",httpFrom); // Prints out the httpFrom header environmental variable
+						pb.environment().put("HTTP_USER_AGENT",httpUserAgent); // Prints out the httpUserAgent environmental variable
 						p = pb.start();
 
 					}catch(Exception e){
-						out.println("HTTP/1.0 403 Forbidden\r");
+						out.println("HTTP/1.0 403 Forbidden\r"); // Checks if the file has permission to read or sends an error about execution
 						out.println("\r");
 						out.flush();
 
@@ -471,12 +473,12 @@ public class PartialHTTP1Server implements Runnable{
 					
 
 					if(!content_type){
-						out.println("HTTP/1.0 500 Internal Server Error\r");
+						out.println("HTTP/1.0 500 Internal Server Error\r"); // Creates an internal server error if there is no content type in the input
 						out.println("\r");
 						out.flush();
 						return;
 					}if(!content_length){
-						out.println("HTTP/1.0 411 Length Required\r");
+						out.println("HTTP/1.0 411 Length Required\r"); // Creates an error saying no content length if you don't include the length in the input
 						out.println("\r");
 						out.flush();
 						return;
@@ -528,10 +530,10 @@ public class PartialHTTP1Server implements Runnable{
 					
 					String payload = "";
 					try (var reader = new BufferedReader(
-							new InputStreamReader(p.getInputStream()))) {
+							new InputStreamReader(p.getInputStream()))) { // Handles payload using bufferReader 
 
 						String line;
-						StringBuilder getPayload = new StringBuilder();
+						StringBuilder getPayload = new StringBuilder(); // Parses the payload and gets the length of the payload
 						while ((line = reader.readLine()) != null) {
 							getPayload.append(line+'\n');
 						}
@@ -539,8 +541,8 @@ public class PartialHTTP1Server implements Runnable{
 						System.out.println(payload.length());
 
 					}
-					System.out.println("payload: <" + payload + ">");
-					if(payload.isEmpty()){
+					System.out.println("payload: <" + payload + ">"); 
+					if(payload.isEmpty()){ // Checks if the payload is empty and returns an error saying no content
 
 						out.println("HTTP/1.0 204 No Content\r");
 						out.println("\r");
@@ -548,7 +550,7 @@ public class PartialHTTP1Server implements Runnable{
 						return;
 					}
 
-					out.println("HTTP/1.0 200 OK\r");
+					out.println("HTTP/1.0 200 OK\r"); // This block of code just the usual HTTP 200 OK Response as from the HEAD and GET requests
 					Date localtime = new Date();
 					DateFormat converter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
