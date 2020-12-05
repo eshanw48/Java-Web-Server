@@ -2,9 +2,13 @@ import java.io.BufferedOutputStream;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.SynchronousQueue;
@@ -139,7 +143,7 @@ public class PartialHTTP1Server implements Runnable{
 			// get first line of the request from the client
 			String header = receive();
 			//String header2 = receive2();
-			//System.out.println(header2);
+			System.out.println(header);
 			String request;
 			String request2;
 			String lines[] = header.split("\r?\n");
@@ -247,7 +251,82 @@ public class PartialHTTP1Server implements Runnable{
 				//If method is GET
 				if (method.equals("GET")) {
 
-					if(!file.exists())
+					boolean foundCookie = false;
+
+					for(int i = 1; i < lines.length; i++) {
+
+						StringTokenizer parse_temp = new StringTokenizer(lines[i]);
+/*
+						if(parse_temp.countTokens() != 2){
+							out.println("HTTP/1.0 400 Bad Request\r"); // Checks if the tokens are invalid or if the input was not properly formatted
+							out.println("\r");
+							out.flush();
+							return;
+						}
+
+ */
+						String name = parse_temp.nextToken();
+
+
+						if(name.equals("Cookie:")){ // Grabs the content length
+							try{
+								foundCookie= true;
+
+								String id = parse_temp.nextToken();
+								String value = parse_temp.nextToken();
+
+
+							}catch(Exception e){
+
+
+							}
+
+							}
+
+
+						}
+
+					LocalDateTime myDateObj = LocalDateTime.now();
+					DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+					String formattedDate = myDateObj.format(myFormatObj);
+					//System.out.printf("Formatted date+time %s \n",formattedDate);
+
+					String encodedDateTime = URLEncoder.encode(formattedDate, "UTF-8");
+					//System.out.printf("URL encoded date-time %s \n",encodedDateTime);
+
+					String decodedDateTime = URLDecoder.decode(encodedDateTime, "UTF-8");
+					//System.out.printf("URL decoded date-time %s \n",decodedDateTime);
+
+					File file2 = new File("/index.html");
+
+					int fileLength2 = (int) file2.length();
+					byte[] fileData2 = readFileData(file2, fileLength2);
+
+
+					File file3 = new File("/index_seen.html");
+
+					int fileLength3 = (int) file3.length();
+					byte[] fileData3 = readFileData(file3, fileLength3);
+
+
+					if(foundCookie == false){
+
+						out.println("Set-Cookie:" + " id=" + Math.random() +"\r");
+						out.println("Set-Cookie: lasttime=" + encodedDateTime + "\r");
+
+
+						dataOut.write(fileData2, 0, fileLength2);
+						//dataOut.flush();
+					}
+					else{
+
+						out.println("Set-Cookie: lasttime=" + encodedDateTime + "\r");
+
+						dataOut.write(fileData3, 0, fileLength3);
+
+					}
+
+						if(!file.exists())
 					{
 						out.println("HTTP/1.0 404 Not Found\r");
 						out.println("\r");
@@ -265,8 +344,10 @@ public class PartialHTTP1Server implements Runnable{
 
 					}
 
-
 					byte[] fileData = readFileData(file, fileLength);
+
+
+
 					long lastModified = file.lastModified();
 					Date modified  = new Date(lastModified);
 					DateFormat converter2 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
@@ -345,7 +426,7 @@ public class PartialHTTP1Server implements Runnable{
 
 					if(!file.exists())
 					{
-						out.println("HTTP/1.0 404 Not Found\r"); //This statement checks if the file exists or is currently in the path or the directory 
+						out.println("HTTP/1.0 404 Not Found\r"); //This statement checks if the file exists or is currently in the path or the directory
 						out.println("\r");
 						out.flush();
 						return;
@@ -432,24 +513,24 @@ public class PartialHTTP1Server implements Runnable{
 							out.flush();
 							return;
 						}
-							String token1 = parse_temp.nextToken();
-							String token2 = parse_temp.nextToken();
-							if(token1.equals("Content-Length:")){ // Grabs the content length
-								try{
-									contentLength = token2;
-									Integer.parseInt(token2);
+						String token1 = parse_temp.nextToken();
+						String token2 = parse_temp.nextToken();
+						if(token1.equals("Content-Length:")){ // Grabs the content length
+							try{
+								contentLength = token2;
+								Integer.parseInt(token2);
 
-									content_length = true;
-								}catch(Exception e){
+								content_length = true;
+							}catch(Exception e){
 
-								}
-							}else if(token1.equals("Content-Type:")){ // Grabs the content type
-								content_type = true;
-							}else if(token1.equals("From:")){ // Grabs the From header
-								httpFrom =token2;
-							}else if(token1.equals("User-Agent:")){ // Grabs the User-Agent header
-								httpUserAgent =token2;
 							}
+						}else if(token1.equals("Content-Type:")){ // Grabs the content type
+							content_type = true;
+						}else if(token1.equals("From:")){ // Grabs the From header
+							httpFrom =token2;
+						}else if(token1.equals("User-Agent:")){ // Grabs the User-Agent header
+							httpUserAgent =token2;
+						}
 					}
 
 					try {
@@ -470,7 +551,7 @@ public class PartialHTTP1Server implements Runnable{
 					}
 					OutputStream os = p.getOutputStream();
 					os.write(s.getBytes());
-					
+
 
 					if(!content_type){
 						out.println("HTTP/1.0 500 Internal Server Error\r"); // Creates an internal server error if there is no content type in the input
@@ -483,7 +564,7 @@ public class PartialHTTP1Server implements Runnable{
 						out.flush();
 						return;
 					}
-		
+
 
 					byte[] fileData = readFileData(file, fileLength);
 					long lastModified = file.lastModified();
@@ -527,10 +608,10 @@ public class PartialHTTP1Server implements Runnable{
 					}
 
 					os.close();
-					
+
 					String payload = "";
 					try (var reader = new BufferedReader(
-							new InputStreamReader(p.getInputStream()))) { // Handles payload using bufferReader 
+							new InputStreamReader(p.getInputStream()))) { // Handles payload using bufferReader
 
 						String line;
 						StringBuilder getPayload = new StringBuilder(); // Parses the payload and gets the length of the payload
@@ -541,7 +622,7 @@ public class PartialHTTP1Server implements Runnable{
 						System.out.println(payload.length());
 
 					}
-					System.out.println("payload: <" + payload + ">"); 
+					System.out.println("payload: <" + payload + ">");
 					if(payload.isEmpty()){ // Checks if the payload is empty and returns an error saying no content
 
 						out.println("HTTP/1.0 204 No Content\r");
@@ -570,11 +651,11 @@ public class PartialHTTP1Server implements Runnable{
 					out.println("Expires: " + converter3.format(tomorrow) + " GMT\r");
 
 					out.println("\r");
-					out.flush();	
-				
+					out.flush();
+
 					dataOut.write(payload.getBytes());
-					dataOut.flush();			
-			
+					dataOut.flush();
+
 				}
 
 				// If method is HEAD.
