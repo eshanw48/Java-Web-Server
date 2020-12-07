@@ -25,9 +25,11 @@ import java.util.concurrent.ThreadPoolExecutor;
  * and pass those connections into threads, which are managed by the thread pool executor. We read requests from the client,
  * and send back the appropriate HTTP response.
  */
-public class PartialHTTP1Server implements Runnable{
+public class HTTP3Server implements Runnable{
 
 	static final File WEB_ROOT = new File(".");
+
+	static final String DEFAULT_FILE = "index.html";
 
 	static final boolean verbose = true;
 
@@ -42,7 +44,7 @@ public class PartialHTTP1Server implements Runnable{
 	 * @param c Takes in a Socket as an argument, which helps with communication between the server and the client.
 	 * @throws IOException Throws an exception if there is an error with BufferedReader.
 	 */
-	public PartialHTTP1Server(Socket c) throws IOException {
+	public HTTP3Server(Socket c) throws IOException {
 		connect = c;
 		try {
 			IN = new BufferedReader(new InputStreamReader(connect.getInputStream()));
@@ -67,7 +69,7 @@ public class PartialHTTP1Server implements Runnable{
 					new SynchronousQueue<Runnable>());
 			// We listen until user ends server execution.
 			while (true) {
-				PartialHTTP1Server myServer = new PartialHTTP1Server(serverConnect.accept());
+				HTTP3Server myServer = new HTTP3Server(serverConnect.accept());
 
 				if (verbose) {
 					//System.out.println("Connecton opened. (" + new Date() + ")");
@@ -131,6 +133,7 @@ public class PartialHTTP1Server implements Runnable{
 
 		try {
 
+
 			// We read characters from the client via input stream on the socket.
 			// We get character output stream to the client.
 			out = new PrintWriter(connect.getOutputStream());
@@ -140,10 +143,25 @@ public class PartialHTTP1Server implements Runnable{
 			TimerTask task = new Helper(out);
 			timer.schedule(task,5000);
 
+
+			File welcome = new File(WEB_ROOT, DEFAULT_FILE);
+
+			int fileLengthWelcome = (int) welcome.length();
+
+			byte[] fileDataWelcome = readFileData(welcome, fileLengthWelcome);
+
+			dataOut.write(fileDataWelcome, 0, fileLengthWelcome);
+
+			dataOut.flush();
+
+
+
 			// get first line of the request from the client
 			String header = receive();
 			//String header2 = receive2();
 			System.out.println(header);
+
+
 			String request;
 			String request2;
 			String lines[] = header.split("\r?\n");
@@ -251,80 +269,8 @@ public class PartialHTTP1Server implements Runnable{
 				//If method is GET
 				if (method.equals("GET")) {
 
-					boolean foundCookie = false;
-
-					for(int i = 1; i < lines.length; i++) {
-
-						StringTokenizer parse_temp = new StringTokenizer(lines[i]);
-/*
-						if(parse_temp.countTokens() != 2){
-							out.println("HTTP/1.0 400 Bad Request\r"); // Checks if the tokens are invalid or if the input was not properly formatted
-							out.println("\r");
-							out.flush();
-							return;
-						}
-
- */
-						String name = parse_temp.nextToken();
 
 
-						if(name.equals("Cookie:")){ // Grabs the content length
-							try{
-								foundCookie= true;
-
-								String id = parse_temp.nextToken();
-								String value = parse_temp.nextToken();
-
-
-							}catch(Exception e){
-
-
-							}
-
-							}
-
-
-						}
-
-					LocalDateTime myDateObj = LocalDateTime.now();
-					DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-					String formattedDate = myDateObj.format(myFormatObj);
-					//System.out.printf("Formatted date+time %s \n",formattedDate);
-
-					String encodedDateTime = URLEncoder.encode(formattedDate, "UTF-8");
-					//System.out.printf("URL encoded date-time %s \n",encodedDateTime);
-
-					String decodedDateTime = URLDecoder.decode(encodedDateTime, "UTF-8");
-					//System.out.printf("URL decoded date-time %s \n",decodedDateTime);
-
-					File file2 = new File("/index.html");
-
-					int fileLength2 = (int) file2.length();
-					byte[] fileData2 = readFileData(file2, fileLength2);
-
-
-					File file3 = new File("/index_seen.html");
-
-					int fileLength3 = (int) file3.length();
-					byte[] fileData3 = readFileData(file3, fileLength3);
-
-
-					if(foundCookie == false){
-
-						out.println("Set-Cookie:" + " id=" + Math.random() +"\r");
-						out.println("Set-Cookie: lasttime=" + encodedDateTime + "\r");
-
-
-						dataOut.write(fileData2, 0, fileLength2);
-						//dataOut.flush();
-					}
-					else{
-
-						out.println("Set-Cookie: lasttime=" + encodedDateTime + "\r");
-
-						dataOut.write(fileData3, 0, fileLength3);
-
-					}
 
 						if(!file.exists())
 					{
@@ -344,7 +290,6 @@ public class PartialHTTP1Server implements Runnable{
 
 					}
 
-					byte[] fileData = readFileData(file, fileLength);
 
 
 
@@ -388,6 +333,18 @@ public class PartialHTTP1Server implements Runnable{
 
 					}
 
+					LocalDateTime myDateObj = LocalDateTime.now();
+					DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+					String formattedDate = myDateObj.format(myFormatObj);
+					//System.out.printf("Formatted date+time %s \n",formattedDate);
+
+					String encodedDateTime = URLEncoder.encode(formattedDate, "UTF-8");
+					//System.out.printf("URL encoded date-time %s \n",encodedDateTime);
+
+					String decodedDateTime = URLDecoder.decode(encodedDateTime, "UTF-8");
+					//System.out.printf("URL decoded date-time %s \n",decodedDateTime);
+
+
 
 
 					out.println("HTTP/1.0 200 OK\r");
@@ -399,7 +356,7 @@ public class PartialHTTP1Server implements Runnable{
 					out.println("MIME-version: 1.0\r");
 					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r");
 					out.println("Content-Type: " + content + "\r");
-					out.println("Content-Length: " + fileLength + "\r");
+				//	out.println("Content-Length: " + fileLength + "\r");
 					out.println("Content-Encoding: identity\r");
 					out.println("Allow: GET, POST, HEAD\r");
 					Calendar calendar = Calendar.getInstance();
@@ -408,10 +365,17 @@ public class PartialHTTP1Server implements Runnable{
 					DateFormat converter3 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss");
 					converter.setTimeZone(TimeZone.getTimeZone("GMT"));
 					out.println("Expires: " + converter3.format(tomorrow) + " GMT\r");
+
+					out.println("Content-Length: " + fileLengthWelcome + "\r");
+
+					out.println("Set-Cookie: lasttime=" + encodedDateTime + "\r");
+
+
 					out.println("\r");
 					out.flush();
 
-					dataOut.write(fileData, 0, fileLength);
+
+					//	dataOut.write(fileData, 0, fileLength);
 					dataOut.flush();
 
 					//This is the POST method and it supports the cgi scripts along with doing decoding with the paramters
