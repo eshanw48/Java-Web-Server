@@ -143,6 +143,7 @@ public class HTTP3Server implements Runnable{
 			TimerTask task = new Helper(out);
 			timer.schedule(task,5000);
 
+			//cookie stuff
 
 			File welcome = new File(WEB_ROOT, DEFAULT_FILE);
 
@@ -150,9 +151,24 @@ public class HTTP3Server implements Runnable{
 
 			byte[] fileDataWelcome = readFileData(welcome, fileLengthWelcome);
 
+
+			LocalDateTime myDateObj = LocalDateTime.now();
+			DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			String formattedDate = myDateObj.format(myFormatObj);
+			//System.out.printf("Formatted date+time %s \n",formattedDate);
+
+			String encodedDateTime = URLEncoder.encode(formattedDate, "UTF-8");
+			System.out.printf("URL encoded date-time %s \n",encodedDateTime);
+
+			String decodedDateTime = URLDecoder.decode(encodedDateTime, "UTF-8");
+			//System.out.printf("URL decoded date-time %s \n",decodedDateTime);
+
+
+
+
+
 			dataOut.write(fileDataWelcome, 0, fileLengthWelcome);
 
-			dataOut.flush();
 
 
 
@@ -333,18 +349,6 @@ public class HTTP3Server implements Runnable{
 
 					}
 
-					LocalDateTime myDateObj = LocalDateTime.now();
-					DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-					String formattedDate = myDateObj.format(myFormatObj);
-					//System.out.printf("Formatted date+time %s \n",formattedDate);
-
-					String encodedDateTime = URLEncoder.encode(formattedDate, "UTF-8");
-					//System.out.printf("URL encoded date-time %s \n",encodedDateTime);
-
-					String decodedDateTime = URLDecoder.decode(encodedDateTime, "UTF-8");
-					//System.out.printf("URL decoded date-time %s \n",decodedDateTime);
-
-
 
 
 					out.println("HTTP/1.0 200 OK\r");
@@ -370,12 +374,10 @@ public class HTTP3Server implements Runnable{
 
 					out.println("Set-Cookie: lasttime=" + encodedDateTime + "\r");
 
-
 					out.println("\r");
 					out.flush();
 
-
-					//	dataOut.write(fileData, 0, fileLength);
+				//	dataOut.write(fileData, 0, fileLength);
 					dataOut.flush();
 
 					//This is the POST method and it supports the cgi scripts along with doing decoding with the paramters
