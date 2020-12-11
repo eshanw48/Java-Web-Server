@@ -158,18 +158,10 @@ public class HTTP3Server implements Runnable{
 			//System.out.printf("Formatted date+time %s \n",formattedDate);
 
 			String encodedDateTime = URLEncoder.encode(formattedDate, "UTF-8");
-			System.out.printf("URL encoded date-time %s \n",encodedDateTime);
+		//	System.out.printf("URL encoded date-time %s \n",encodedDateTime);
 
 			String decodedDateTime = URLDecoder.decode(encodedDateTime, "UTF-8");
 			//System.out.printf("URL decoded date-time %s \n",decodedDateTime);
-
-
-
-
-
-			dataOut.write(fileDataWelcome, 0, fileLengthWelcome);
-
-
 
 
 			// get first line of the request from the client
@@ -288,7 +280,7 @@ public class HTTP3Server implements Runnable{
 
 
 
-						if(!file.exists())
+					if(!file.exists())
 					{
 						out.println("HTTP/1.0 404 Not Found\r");
 						out.println("\r");
@@ -349,6 +341,78 @@ public class HTTP3Server implements Runnable{
 
 					}
 
+					boolean foundCookie = false;
+
+					String lastTime = null;
+
+					for(int i = 1; i < lines.length; i++) {
+
+						StringTokenizer parse_temp = new StringTokenizer(lines[i]);
+ /*
+ 						if(parse_temp.countTokens() != 2){
+ 							out.println("HTTP/1.0 400 Bad Request\r"); // Checks if the tokens are invalid or if the input was not properly formatted
+ 							out.println("\r");
+ 							out.flush();
+ 							return;
+ 						}
+
+  */
+						String name = parse_temp.nextToken();
+
+
+						if(name.equals("Cookie:")){ // Grabs the content length
+							try{
+								foundCookie= true;
+
+								 lastTime = parse_temp.nextToken();
+
+
+							}catch(Exception e){
+
+
+							}
+
+						}
+
+
+					}
+
+					String newUser = "<html>\n<body>\n<h1>CS 352 Welcome Page </h1>\n<p>\n  Welcome! We have not seen you before.\n<p>\n</body>\n</html>\n";
+
+					byte[] newUserBytes = newUser.getBytes();
+
+					int newUserLength = newUserBytes.length;
+
+
+
+
+
+					String oldDate = "";
+
+					if(lastTime != null) {
+						for (int i = 0; i < lastTime.length(); i++) {
+
+							if(lastTime.charAt(i) == '='){
+
+								oldDate += lastTime.substring(i+1);
+								break;
+							}
+
+						}
+					}
+
+					System.out.println(oldDate);
+
+					String indexSeenDate = URLDecoder.decode(oldDate, "UTF-8");
+
+					System.out.println(indexSeenDate);
+
+					String oldUser = "<html>\n<body>\n<h1>CS 352 Welcome Page </h1>\n<p>\n  Welcome back! Your last visit was at: " + indexSeenDate + "\n<p>\n</body>\n</html>\n";
+
+					byte[] oldUserBytes = oldUser.getBytes();
+
+					int oldUserLength = oldUserBytes.length;
+
 
 
 					out.println("HTTP/1.0 200 OK\r");
@@ -360,7 +424,7 @@ public class HTTP3Server implements Runnable{
 					out.println("MIME-version: 1.0\r");
 					out.println("Last-Modified: " + converter2.format(modified) + " GMT\r");
 					out.println("Content-Type: " + content + "\r");
-				//	out.println("Content-Length: " + fileLength + "\r");
+					//	out.println("Content-Length: " + fileLength + "\r");
 					out.println("Content-Encoding: identity\r");
 					out.println("Allow: GET, POST, HEAD\r");
 					Calendar calendar = Calendar.getInstance();
@@ -377,7 +441,19 @@ public class HTTP3Server implements Runnable{
 					out.println("\r");
 					out.flush();
 
-				//	dataOut.write(fileData, 0, fileLength);
+					//	dataOut.write(fileData, 0, fileLength);
+
+					if(foundCookie == false)
+					{
+						dataOut.write(newUserBytes, 0, newUserLength);
+
+					}
+					else
+					{
+						dataOut.write(oldUserBytes, 0, oldUserLength);
+
+					}
+
 					dataOut.flush();
 
 					//This is the POST method and it supports the cgi scripts along with doing decoding with the paramters
